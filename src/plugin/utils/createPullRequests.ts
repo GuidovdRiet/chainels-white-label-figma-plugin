@@ -231,7 +231,7 @@ export async function createPullRequests(
   files: {
     typescript: string;
     scss: string;
-    scssEmail: string;
+    scssTheme: string;
   },
   credentials: { username: string; token: string }
 ) {
@@ -248,11 +248,11 @@ export async function createPullRequests(
         path: `themes/${whiteLabelName}.colors.scss`,
       },
       {
-        content: files.scssEmail,
+        content: files.scssTheme,
         path: `themes/${whiteLabelName}.scss`,
       },
       {
-        content: files.scssEmail,
+        content: files.scssTheme,
         path: `themes/${whiteLabelName}-email.scss`,
       },
     ],

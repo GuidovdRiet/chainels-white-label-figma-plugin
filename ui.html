@@ -179,18 +179,18 @@
       };
 
       document.getElementById("download-scss-theme").onclick = () => {
-        if (!generatedFiles?.scssEmail) return;
+        if (!generatedFiles?.scssTheme) return;
         downloadFile(
           `${document.getElementById("whiteLabelName").value}.theme.scss`,
-          generatedFiles.scssEmail
+          generatedFiles.scssTheme
         );
       };
 
       document.getElementById("download-scss-email").onclick = () => {
-        if (!generatedFiles?.scssEmail) return;
+        if (!generatedFiles?.scssTheme) return;
         downloadFile(
           `${document.getElementById("whiteLabelName").value}-email.scss`,
-          generatedFiles.scssEmail
+          generatedFiles.scssTheme
         );
       };
 
@@ -199,7 +199,7 @@
           if (
             !generatedFiles?.typescript ||
             !generatedFiles?.scss ||
-            !generatedFiles?.scssEmail
+            !generatedFiles?.scssTheme
           ) {
             showMessage("Error: Missing generated files", "error");
             return;
@@ -214,8 +214,8 @@
           // Add files to the zip with correct names
           zip.file(`${whiteLabelName}.brand.ts`, generatedFiles.typescript);
           zip.file(`${whiteLabelName}.colors.scss`, generatedFiles.scss);
-          zip.file(`${whiteLabelName}.theme.scss`, generatedFiles.scssEmail);
-          zip.file(`${whiteLabelName}-email.scss`, generatedFiles.scssEmail);
+          zip.file(`${whiteLabelName}.theme.scss`, generatedFiles.scssTheme);
+          zip.file(`${whiteLabelName}-email.scss`, generatedFiles.scssTheme);
 
           // Generate and download the zip
           const blob = await zip.generateAsync({ type: "blob" });
@@ -249,7 +249,7 @@
         if (
           !generatedFiles?.typescript ||
           !generatedFiles?.scss ||
-          !generatedFiles?.scssEmail
+          !generatedFiles?.scssTheme
         ) {
           showMessage("Error: Missing generated files", "error");
           return;
@@ -270,7 +270,7 @@
               files: {
                 typescript: generatedFiles.typescript,
                 scss: generatedFiles.scss,
-                scssEmail: generatedFiles.scssEmail,
+                scssTheme: generatedFiles.scssTheme,
               },
             },
           },

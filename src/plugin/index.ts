@@ -2,7 +2,7 @@ import "./utils/setImmediatePolyfill";
 import { generateTheme } from "./themeGenerator";
 import { generateTypescript } from "./generators/typescript";
 import { generateScss } from "./generators/scss";
-import { generateScssEmail } from "./generators/scssEmail";
+import { generateScssTheme } from "./generators/scssTheme";
 import { createPullRequests } from "./utils/createPullRequests";
 
 figma.showUI(__html__, { width: 350, height: 500 });
@@ -18,7 +18,7 @@ figma.ui.onmessage = async (msg) => {
         msg.whiteLabelName
       );
       const scss = await generateScss(transformedData, msg.whiteLabelName);
-      const scssEmail = await generateScssEmail(
+      const scssTheme = await generateScssTheme(
         transformedData,
         msg.whiteLabelName
       );
@@ -29,7 +29,7 @@ figma.ui.onmessage = async (msg) => {
         data: {
           typescript,
           scss,
-          scssEmail,
+          scssTheme,
           themeData: transformedData,
         },
       });
