@@ -49,10 +49,14 @@ async function createBitbucketPR(
       throw new Error("Username and app password are required");
     }
 
+    // Send progress update
+    figma.ui.postMessage({
+      type: "pr-progress",
+      message: "Starting PR creation process...",
+    });
+
     const baseUrl = "https://api.bitbucket.org/2.0";
     const workspace = "chainels";
-    console.log("Using workspace:", workspace);
-    console.log("Repository slug:", config.repoSlug);
 
     // Create authorization header with app password
     const auth = base64Encode(`${username}:${token}`);
@@ -61,14 +65,14 @@ async function createBitbucketPR(
       Accept: "application/json",
       "Content-Type": "application/json",
     };
-    console.log("Headers set (excluding auth):", {
-      Accept: headers.Accept,
-      "Content-Type": headers["Content-Type"],
-    });
 
     // 1. Check if branch exists and delete it if it does
+    figma.ui.postMessage({
+      type: "pr-progress",
+      message: `Checking if branch '${config.branch}' exists...`,
+    });
+
     const branchUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/refs/branches/${config.branch}`;
-    console.log("Checking if branch exists:", config.branch);
 
     try {
       const branchCheckResponse = await fetch(branchUrl, {
@@ -77,7 +81,10 @@ async function createBitbucketPR(
       });
 
       if (branchCheckResponse.ok) {
-        console.log("Branch exists, deleting it first");
+        figma.ui.postMessage({
+          type: "pr-progress",
+          message: "⌛ Branch exists, deleting it...",
+        });
         const deleteResponse = await fetch(branchUrl, {
           method: "DELETE",
           headers,
@@ -86,28 +93,25 @@ async function createBitbucketPR(
         if (!deleteResponse.ok) {
           const errorText = await deleteResponse.text();
           console.error("Failed to delete existing branch:", errorText);
-        } else {
-          console.log("Existing branch deleted successfully");
         }
-      } else {
-        console.log("Branch does not exist, proceeding with creation");
       }
     } catch (error) {
       console.log("Error checking branch existence:", error);
     }
 
     // 2. Create new branch
-    const branchCreateUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/refs/branches`;
-    console.log("Creating branch:", config.branch);
-    console.log("Branch creation URL:", branchCreateUrl);
+    figma.ui.postMessage({
+      type: "pr-progress",
+      message: `⌛ Creating new branch '${config.branch}'...`,
+    });
 
+    const branchCreateUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/refs/branches`;
     const branchPayload = {
       name: config.branch,
       target: {
         hash: "main",
       },
     };
-    console.log("Branch creation payload:", branchPayload);
 
     const branchResponse = await fetch(branchCreateUrl, {
       method: "POST",
@@ -115,19 +119,14 @@ async function createBitbucketPR(
       body: JSON.stringify(branchPayload),
     });
 
-    console.log("Branch creation response status:", branchResponse.status);
     if (!branchResponse.ok) {
       const errorText = await branchResponse.text();
       let parsedError;
       try {
         parsedError = JSON.parse(errorText);
-        console.log("Parsed error response:", parsedError);
-      } catch (e) {
-        console.log("Raw error response:", errorText);
-      }
+      } catch (e) {}
 
       let errorMessage = `Branch creation failed (${branchResponse.status})`;
-
       if (branchResponse.status === 401) {
         errorMessage = `Authentication failed. Please check your app password.`;
       } else if (branchResponse.status === 403) {
@@ -137,21 +136,22 @@ async function createBitbucketPR(
           parsedError?.error?.message ||
           `Invalid request. Please check if the branch already exists or if the target branch is valid.`;
       }
-
-      console.error(errorMessage, errorText);
       throw new Error(errorMessage);
     }
 
-    console.log("Branch created successfully");
-
     // 3. Create commits for the files
-    console.log("Starting file creation for", config.files.length, "files");
-    for (const file of config.files) {
-      console.log("Creating file:", file.path);
-      const fileUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/src`;
-      console.log("File creation URL:", fileUrl);
+    figma.ui.postMessage({
+      type: "pr-progress",
+      message: `⌛ Creating ${config.files.length} files...`,
+    });
 
-      // Create URL-encoded string manually
+    for (const file of config.files) {
+      figma.ui.postMessage({
+        type: "pr-progress",
+        message: `⌛ Creating file: ${file.path}...`,
+      });
+
+      const fileUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/src`;
       const encodedBody = [
         `${encodeURIComponent(file.path)}=${encodeURIComponent(file.content)}`,
         `branch=${encodeURIComponent(config.branch)}`,
@@ -167,25 +167,19 @@ async function createBitbucketPR(
         body: encodedBody,
       });
 
-      console.log(
-        `File ${file.path} creation response status:`,
-        fileResponse.status
-      );
       if (!fileResponse.ok) {
         const errorText = await fileResponse.text();
-        console.error(
-          `File creation failed for ${file.path} (${fileResponse.status}):`,
-          errorText
-        );
         throw new Error(`Failed to create file ${file.path}: ${errorText}`);
       }
-      console.log(`File ${file.path} created successfully`);
     }
 
     // 4. Create pull request
-    console.log("Starting PR creation");
+    figma.ui.postMessage({
+      type: "pr-progress",
+      message: "⌛ Creating pull request...",
+    });
+
     const prUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/pullrequests`;
-    console.log("PR creation URL:", prUrl);
     const prPayload = {
       title: config.prTitle,
       description: config.prDescription,
@@ -200,7 +194,6 @@ async function createBitbucketPR(
         },
       },
     };
-    console.log("PR creation payload:", prPayload);
 
     const prResponse = await fetch(prUrl, {
       method: "POST",
@@ -208,17 +201,18 @@ async function createBitbucketPR(
       body: JSON.stringify(prPayload),
     });
 
-    console.log("PR creation response status:", prResponse.status);
     if (!prResponse.ok) {
       const errorText = await prResponse.text();
-      console.log("Full PR error response:", errorText);
-      console.error(`PR creation failed (${prResponse.status}):`, errorText);
       throw new Error(`Failed to create PR: ${errorText}`);
     }
 
-    console.log("PR created successfully");
     const result = await prResponse.json();
-    console.log("PR creation result:", result);
+    figma.ui.postMessage({
+      type: "pr-progress",
+      message: `🚀 Pull request created successfully! URL: ${result.links.html.href}`,
+      url: result.links.html.href,
+    });
+
     return result;
   } catch (error) {
     console.error("Error in createBitbucketPR:", error);
@@ -258,7 +252,22 @@ export async function createPullRequests(
     ],
     commitMessage: `feat(white-label): add ${whiteLabelName} theme files`,
     prTitle: `Add ${whiteLabelName} white label theme`,
-    prDescription: `Generated white label theme files for ${whiteLabelName}`,
+    prDescription: `# White Label Theme: ${whiteLabelName}
+
+This PR adds the following generated theme files:
+- \`${whiteLabelName}.brand.ts\`: TypeScript theme configuration
+- \`${whiteLabelName}.colors.scss\`: SCSS color variables and maps
+- \`${whiteLabelName}.theme.scss\`: Main theme file with color assignments
+- \`${whiteLabelName}-email.scss\`: Email-specific theme styles
+
+## Changes
+- Created new branch \`feature/white-label-${whiteLabelName.toLowerCase()}\`
+- Generated theme files from Figma design tokens
+- Added theme files to \`themes/\` directory
+
+## Generated by
+- Chainels White Label Figma Plugin
+- User: ${credentials.username}`,
   };
 
   return await createBitbucketPR(repoConfig, credentials);

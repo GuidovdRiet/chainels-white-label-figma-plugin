@@ -47,7 +47,7 @@ figma.ui.onmessage = async (msg) => {
       await createPullRequests(msg.whiteLabelName, msg.files, msg.credentials);
       figma.ui.postMessage({
         type: "prs-created",
-        message: "Pull requests created successfully!",
+        message: "🚀 Pull requests created successfully!",
       });
     } catch (error) {
       figma.ui.postMessage({

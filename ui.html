@@ -54,7 +54,8 @@
         border: 1px solid #ff0266;
       }
       .error,
-      .success {
+      .success,
+      .info {
         font-size: 12px;
       }
       .error {
@@ -62,8 +63,16 @@
         margin-top: 8px;
       }
       .success {
-        color: #659f93;
+        color: #568177;
         margin-top: 8px;
+      }
+      .info {
+        color: #568177;
+        margin-top: 8px;
+      }
+      .info a {
+        color: #568177;
+        text-decoration: underline;
       }
       #download-section {
         display: none;
@@ -301,9 +310,21 @@
         const msg = event.data.pluginMessage;
         const submitButton = document.getElementById("submit-prs");
 
+        if (msg.type === "pr-progress") {
+          showMessage(msg.message, "info");
+          if (msg.url) {
+            // Create PR link if URL is provided
+            const messageEl = document.getElementById("message");
+            messageEl.innerHTML = `${msg.message} <a href="${msg.url}" target="_blank">View PR</a>`;
+          }
+          return;
+        }
+
         // Reset submit button state
-        submitButton.disabled = false;
-        submitButton.textContent = "Create Pull Requests";
+        if (msg.type !== "pr-progress") {
+          submitButton.disabled = false;
+          submitButton.textContent = "Create Pull Requests";
+        }
 
         if (msg.type === "error") {
           showMessage(msg.message, "error");
