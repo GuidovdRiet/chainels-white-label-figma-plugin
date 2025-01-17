@@ -151,20 +151,20 @@ async function createBitbucketPR(
       const fileUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/src`;
       console.log("File creation URL:", fileUrl);
 
-      const formData = new FormData();
-      formData.append(
-        file.path,
-        new Blob([file.content], { type: "text/plain" })
-      );
-      formData.append("branch", config.branch);
-      formData.append("message", config.commitMessage);
+      // Create URL-encoded string manually
+      const encodedBody = [
+        `${encodeURIComponent(file.path)}=${encodeURIComponent(file.content)}`,
+        `branch=${encodeURIComponent(config.branch)}`,
+        `message=${encodeURIComponent(`Add ${file.path}`)}`,
+      ].join("&");
 
       const fileResponse = await fetch(fileUrl, {
         method: "POST",
         headers: {
           Authorization: `Basic ${auth}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: formData,
+        body: encodedBody,
       });
 
       console.log(
@@ -246,6 +246,10 @@ export async function createPullRequests(
       {
         content: files.scss,
         path: `themes/${whiteLabelName}.colors.scss`,
+      },
+      {
+        content: files.scssEmail,
+        path: `themes/${whiteLabelName}.scss`,
       },
       {
         content: files.scssEmail,
