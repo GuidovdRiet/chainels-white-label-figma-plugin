@@ -2,15 +2,16 @@
 <html>
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script>
       window.onload = function () {
-        if (!window.JSZip) {
-          console.error("JSZip failed to load");
+        if (!window.JSZip || !window.FileSaver) {
+          console.error("JSZip or FileSaver failed to load");
           document.getElementById("download-all-web").disabled = true;
           document.getElementById("download-all-web").title =
             "Download all feature unavailable";
         } else {
-          console.log("JSZip loaded successfully");
+          console.log("JSZip and FileSaver loaded successfully");
         }
       };
     </script>
@@ -101,6 +102,10 @@
         Download Email SCSS
       </button>
       <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
+      <h3>Favicons</h3>
+      <input type="file" id="favicon" accept="image/*" />
+      <button id="download-favicons" class="generate">Download Favicons</button>
+      <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
       <div id="pr-form">
         <h3>Create Pull Requests</h3>
         <input
@@ -136,6 +141,7 @@
 
     <script>
       let generatedFiles = null;
+      let favicon = null;
 
       document.getElementById("generate").onclick = () => {
         const whiteLabelName = document
@@ -319,6 +325,196 @@
           document.getElementById("download-section").style.display = "block";
         }
       };
+
+      // Favicon related code
+      document.getElementById("download-favicons").onclick = () => {
+        if (!favicon) {
+          showMessage("Please upload a favicon", "error");
+          return;
+        }
+        downloadResizedImagesAsZip({
+          favicon,
+          sizes: [
+            { width: 192, height: 192, prefix: "favicon" },
+            { width: 512, height: 512, prefix: "favicon" },
+          ],
+          whiteLabelName: document.getElementById("whiteLabelName").value,
+        });
+      };
+      document.getElementById("favicon").onchange =
+        function handleFaviconSelect(event) {
+          const file = event.target.files?.[0];
+          if (!file) return;
+
+          // Verify it's an image file
+          if (!file.type.startsWith("image/")) {
+            console.error("Selected file is not an image");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function () {
+            if (!reader.result) return;
+
+            try {
+              // Convert the file to a Blob and create an object URL
+              const blob = new Blob([new Uint8Array(reader.result)], {
+                type: file.type, // Preserve the original file type
+              });
+              const blobUrl = URL.createObjectURL(blob);
+
+              // Verify the blob URL can be loaded as an image
+              const img = new Image();
+              img.onload = function () {
+                favicon = blobUrl; // Update the global favicon variable
+              };
+              img.onerror = function () {
+                console.error("Error loading image from blob");
+                URL.revokeObjectURL(blobUrl);
+              };
+              img.src = blobUrl;
+            } catch (error) {
+              console.error("Error processing file:", error);
+            }
+          };
+          reader.onerror = function () {
+            console.error("Error reading file");
+          };
+          reader.readAsArrayBuffer(file);
+        };
+
+      /**
+       * @description Resize an image to the target width and height.
+       */
+      async function resizeImage({ favicon, targetWidth, targetHeight }) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = favicon;
+
+          img.onload = () => {
+            const imgAspectRatio = img.width / img.height;
+            const targetAspectRatio = targetWidth / targetHeight;
+            let sx = 0;
+            let sy = 0;
+            let sWidth = img.width;
+            let sHeight = img.height;
+
+            /**
+             * Determine the best way to crop the image.
+             * This is done to maintain the aspect ratio of the image so it matches the preview
+             * used in the UI which uses background-size: cover.
+             */
+            if (imgAspectRatio > targetAspectRatio) {
+              /**
+               * Image is wider than the target, crop left and right
+               */
+              const newWidth = img.height * targetAspectRatio;
+              sx = (img.width - newWidth) / 2;
+              sWidth = newWidth;
+            } else if (imgAspectRatio < targetAspectRatio) {
+              /**
+               * Image is taller than the target, crop top and bottom
+               */
+              const newHeight = img.width / targetAspectRatio;
+              sy = (img.height - newHeight) / 2;
+              sHeight = newHeight;
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            const ctx = canvas.getContext("2d");
+            ctx?.drawImage(
+              img,
+              sx,
+              sy,
+              sWidth,
+              sHeight,
+              0,
+              0,
+              targetWidth,
+              targetHeight
+            );
+            canvas.toBlob(resolve, "image/png");
+          };
+          img.onerror = reject;
+        });
+      }
+      /**
+       * @description Generate a web app manifest for the user to download.
+       */
+      async function generateWebAppManifest(name) {
+        const manifest = {
+          name: "manifest.json",
+          short_name: "",
+          theme_color: "#ffffff",
+          background_color: "#ffffff",
+          display: "standalone",
+          icons: [
+            {
+              src: `/favicons/${name}/web-app-manifest-192x192.png`,
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "maskable",
+            },
+            {
+              src: `/favicons/${name}/web-app-manifest-512x512.png`,
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
+          ],
+        };
+
+        const blob = new Blob([JSON.stringify(manifest, null, 2)], {
+          type: "application/json",
+        });
+
+        return blob;
+      }
+
+      /**
+       * @description Download the resized images as a zip file.
+       */
+      async function downloadResizedImagesAsZip({
+        favicon,
+        sizes,
+        whiteLabelName,
+      }) {
+        const zip = new JSZip();
+
+        for (const size of sizes) {
+          const blob = await resizeImage({
+            favicon,
+            targetWidth: size.width,
+            targetHeight: size.height,
+          });
+
+          zip.file(`${size.prefix}-${size.width}x${size.height}.png`, blob, {
+            binary: true,
+          });
+        }
+
+        const icoBlob = await resizeImage({
+          favicon,
+          targetWidth: 64,
+          targetHeight: 64,
+        });
+
+        zip.file(`favicon.ico`, icoBlob, {
+          binary: true,
+        });
+
+        const manifestBlob = await generateWebAppManifest(whiteLabelName);
+
+        zip.file("manifest.json", manifestBlob, {
+          binary: true,
+        });
+
+        const content = await zip.generateAsync({ type: "blob" });
+        saveAs(content, `favicons-${whiteLabelName}.zip`);
+      }
     </script>
   </body>
 </html>
