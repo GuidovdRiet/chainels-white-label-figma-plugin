@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+      window.onload = function() {
+        if (!window.JSZip) {
+          console.error("JSZip failed to load");
+          document.getElementById("download-all-web").disabled = true;
+          document.getElementById("download-all-web").title = "Download all feature unavailable";
+        } else {
+          console.log("JSZip loaded successfully");
+        }
+      };
+    </script>
     <style>
       body {
         font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -68,13 +80,12 @@
 
     <div id="download-section">
       <h3>Generated Files</h3>
+      <button id="download-all-web" class="secondary">Download All Web Files</button>
+      <div style="margin: 16px 0; border-top: 1px solid #eee;"></div>
       <button id="download-ts" class="secondary">Download TypeScript</button>
-      <button id="download-colors-scss" class="secondary">
-        Download Colors SCSS
-      </button>
-      <button id="download-theme-scss" class="secondary">
-        Download Theme SCSS
-      </button>
+      <button id="download-scss-colors" class="secondary">Download Colors SCSS</button>
+      <button id="download-scss-theme" class="secondary">Download Theme SCSS</button>
+      <button id="download-scss-email" class="secondary">Download Email SCSS</button>
     </div>
 
     <div id="message"></div>
@@ -116,7 +127,7 @@
         );
       };
 
-      document.getElementById("download-colors-scss").onclick = () => {
+      document.getElementById("download-scss-colors").onclick = () => {
         if (!generatedFiles?.scss) return;
         downloadFile(
           `${document.getElementById("whiteLabelName").value}.colors.scss`,
@@ -124,12 +135,57 @@
         );
       };
 
-      document.getElementById("download-theme-scss").onclick = () => {
-        if (!generatedFiles?.scssWhiteLabelName) return;
+      document.getElementById("download-scss-theme").onclick = () => {
+        if (!generatedFiles?.scssEmail) return;
         downloadFile(
-          `${document.getElementById("whiteLabelName").value}.scss`,
-          generatedFiles.scssWhiteLabelName
+          `${document.getElementById("whiteLabelName").value}.theme.scss`,
+          generatedFiles.scssEmail
         );
+      };
+
+      document.getElementById("download-scss-email").onclick = () => {
+        if (!generatedFiles?.scssEmail) return;
+        downloadFile(
+          `${document.getElementById("whiteLabelName").value}-email.scss`,
+          generatedFiles.scssEmail
+        );
+      };
+
+      document.getElementById("download-all-web").onclick = async () => {
+        try {
+          if (!generatedFiles?.typescript || !generatedFiles?.scss || !generatedFiles?.scssEmail) {
+            showMessage("Error: Missing generated files", "error");
+            return;
+          }
+
+          const whiteLabelName = document.getElementById("whiteLabelName").value;
+          
+          // Create a new ZIP using the browser's JSZip
+          const zip = new JSZip();
+          
+          // Add files to the zip with correct names
+          zip.file(`${whiteLabelName}.brand.ts`, generatedFiles.typescript);
+          zip.file(`${whiteLabelName}.colors.scss`, generatedFiles.scss);
+          zip.file(`${whiteLabelName}.theme.scss`, generatedFiles.scssEmail);
+          zip.file(`${whiteLabelName}-email.scss`, generatedFiles.scssEmail);
+          
+          // Generate and download the zip
+          const blob = await zip.generateAsync({ type: "blob" });
+          const url = URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${whiteLabelName}-web-files.zip`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          showMessage("Files downloaded successfully!", "success");
+        } catch (error) {
+          console.error("Error creating zip:", error);
+          showMessage("Error creating zip file", "error");
+        }
       };
 
       function downloadFile(filename, content) {

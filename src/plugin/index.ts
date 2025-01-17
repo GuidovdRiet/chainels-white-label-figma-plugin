@@ -1,7 +1,8 @@
+import './utils/setImmediatePolyfill';
 import { generateTheme } from "./themeGenerator";
 import { generateTypescript } from "./generators/typescript";
 import { generateScss } from "./generators/scss";
-import { generateScssWhiteLabelName } from "./generators/scssTheme";
+import { generateScssEmail } from "./generators/scssEmail";
 
 figma.showUI(__html__, { width: 320, height: 480 });
 
@@ -16,7 +17,7 @@ figma.ui.onmessage = async (msg) => {
         msg.whiteLabelName
       );
       const scss = await generateScss(transformedData, msg.whiteLabelName);
-      const scssWhiteLabelName = await generateScssWhiteLabelName(
+      const scssEmail = await generateScssEmail(
         transformedData,
         msg.whiteLabelName
       );
@@ -27,7 +28,7 @@ figma.ui.onmessage = async (msg) => {
         data: {
           typescript,
           scss,
-          scssWhiteLabelName,
+          scssEmail,
           themeData: transformedData,
         },
       });
