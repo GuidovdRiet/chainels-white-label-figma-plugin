@@ -91,6 +91,7 @@
         placeholder="Enter white label name (e.g., ChainelsWhiteLabel)"
         value="ChainelsWhiteLabel"
       />
+      <input type="file" id="favicon" accept="image/*" />
       <button id="generate">Generate Theme Files</button>
     </div>
 
@@ -110,10 +111,9 @@
       <button id="download-scss-email" class="secondary">
         Download Email SCSS
       </button>
-      <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
-      <h3>Favicons</h3>
-      <input type="file" id="favicon" accept="image/*" />
-      <button id="download-favicons" class="generate">Download Favicons</button>
+      <button id="download-favicons" class="secondary">
+        Download Favicons
+      </button>
       <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
       <div id="pr-form">
         <h3>Create Pull Requests</h3>
@@ -159,6 +159,11 @@
 
         if (!whiteLabelName) {
           showMessage("Please enter a white label name", "error");
+          return;
+        }
+
+        if (!favicon) {
+          showMessage("Please enter a favicon image", "error");
           return;
         }
 
@@ -223,6 +228,11 @@
           const whiteLabelName =
             document.getElementById("whiteLabelName").value;
 
+          const faviconSizes = [
+            { width: 192, height: 192, prefix: "favicon" },
+            { width: 512, height: 512, prefix: "favicon" },
+          ];
+
           // Create a new ZIP using the browser's JSZip
           const zip = new JSZip();
 
@@ -232,17 +242,37 @@
           zip.file(`${whiteLabelName}.theme.scss`, generatedFiles.scssTheme);
           zip.file(`${whiteLabelName}-email.scss`, generatedFiles.scssTheme);
 
+          for (const size of faviconSizes) {
+            const blob = await resizeImage({
+              favicon,
+              targetWidth: size.width,
+              targetHeight: size.height,
+            });
+
+            zip.file(`${size.prefix}-${size.width}x${size.height}.png`, blob, {
+              binary: true,
+            });
+          }
+
+          const icoBlob = await resizeImage({
+            favicon,
+            targetWidth: 64,
+            targetHeight: 64,
+          });
+
+          zip.file(`favicon.ico`, icoBlob, {
+            binary: true,
+          });
+
+          const manifestBlob = await generateWebAppManifest(whiteLabelName);
+
+          zip.file("manifest.json", manifestBlob, {
+            binary: true,
+          });
+
           // Generate and download the zip
           const blob = await zip.generateAsync({ type: "blob" });
-          const url = URL.createObjectURL(blob);
-
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `${whiteLabelName}-web-files.zip`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+          saveAs(blob, `${whiteLabelName}.zip`);
 
           showMessage("Files downloaded successfully!", "success");
         } catch (error) {
@@ -504,6 +534,7 @@
         whiteLabelName,
       }) {
         const zip = new JSZip();
+        const files = [];
 
         for (const size of sizes) {
           const blob = await resizeImage({
