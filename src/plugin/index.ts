@@ -3,6 +3,7 @@ import { generateTheme } from "./themeGenerator";
 import { generateTypescript } from "./generators/typescript";
 import { generateScss } from "./generators/scss";
 import { generateScssEmail } from "./generators/scssEmail";
+import { createPullRequests } from "./utils/createPullRequests";
 
 figma.showUI(__html__, { width: 350, height: 500 });
 
@@ -38,6 +39,23 @@ figma.ui.onmessage = async (msg) => {
         type: "error",
         message:
           error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    }
+  }
+  if (msg.type === "create-prs") {
+    try {
+      await createPullRequests(msg.whiteLabelName, msg.files, msg.credentials);
+      figma.ui.postMessage({
+        type: "prs-created",
+        message: "Pull requests created successfully!",
+      });
+    } catch (error) {
+      figma.ui.postMessage({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to create pull requests",
       });
     }
   }

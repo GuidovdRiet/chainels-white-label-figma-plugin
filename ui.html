@@ -29,6 +29,10 @@
         border-radius: 4px;
         box-sizing: border-box;
       }
+      input:focus {
+        border: 1px solid transparent;
+        outline: 1px solid #ff0266;
+      }
       button {
         background: #ff0266;
         color: white;
@@ -41,6 +45,7 @@
       }
       button:disabled {
         background: #d1d5db;
+        color: #1f2937;
         cursor: not-allowed;
       }
       button.secondary {
@@ -95,6 +100,36 @@
       <button id="download-scss-email" class="secondary">
         Download Email SCSS
       </button>
+      <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
+      <div id="pr-form">
+        <h3>Create Pull Requests</h3>
+        <input
+          type="text"
+          id="bitbucket-username"
+          placeholder="Bitbucket Username"
+          value="guidochainels"
+          required
+        />
+        <input
+          type="password"
+          id="bitbucket-token"
+          placeholder="Bitbucket App Password"
+          required
+        />
+        <div style="font-size: 12px; margin-bottom: 12px; color: #666">
+          Create an app password with these permissions:
+          <ul style="margin: 8px 0; padding-left: 20px">
+            <li>Repository: Read, Write</li>
+            <li>Pull requests: Read, Write</li>
+          </ul>
+          <a
+            href="https://bitbucket.org/account/settings/app-passwords/"
+            target="_blank"
+            >Create App Password</a
+          >
+        </div>
+        <button id="submit-prs" class="secondary">Create Pull Requests</button>
+      </div>
     </div>
 
     <div id="message"></div>
@@ -115,7 +150,6 @@
         // Reset UI state
         document.getElementById("download-section").style.display = "none";
         document.getElementById("generate").disabled = true;
-        showMessage("Generating theme...", "success");
 
         parent.postMessage(
           {
@@ -202,6 +236,48 @@
         }
       };
 
+      document.getElementById("submit-prs").onclick = () => {
+        const submitButton = document.getElementById("submit-prs");
+        const username = document.getElementById("bitbucket-username").value;
+        const token = document.getElementById("bitbucket-token").value;
+
+        if (!username || !token) {
+          showMessage("Please enter both username and app password", "error");
+          return;
+        }
+
+        if (
+          !generatedFiles?.typescript ||
+          !generatedFiles?.scss ||
+          !generatedFiles?.scssEmail
+        ) {
+          showMessage("Error: Missing generated files", "error");
+          return;
+        }
+
+        // Disable button and show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = "Creating Pull Request...";
+
+        const whiteLabelName = document.getElementById("whiteLabelName").value;
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "create-prs",
+              whiteLabelName,
+              credentials: { username, token },
+              files: {
+                typescript: generatedFiles.typescript,
+                scss: generatedFiles.scss,
+                scssEmail: generatedFiles.scssEmail,
+              },
+            },
+          },
+          "*"
+        );
+      };
+
       function downloadFile(filename, content) {
         const element = document.createElement("a");
         element.setAttribute(
@@ -223,17 +299,24 @@
 
       onmessage = (event) => {
         const msg = event.data.pluginMessage;
-        document.getElementById("generate").disabled = false;
+        const submitButton = document.getElementById("submit-prs");
+
+        // Reset submit button state
+        submitButton.disabled = false;
+        submitButton.textContent = "Create Pull Requests";
 
         if (msg.type === "error") {
           showMessage(msg.message, "error");
           return;
         }
 
+        if (msg.type === "prs-created") {
+          showMessage(msg.message, "success");
+        }
+
         if (msg.type === "theme-generated") {
           generatedFiles = msg.data;
           document.getElementById("download-section").style.display = "block";
-          showMessage("Theme generated successfully!", "success");
         }
       };
     </script>

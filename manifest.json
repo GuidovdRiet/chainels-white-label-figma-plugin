@@ -6,6 +6,9 @@
   "ui": "ui.html",
   "editorType": ["figma"],
   "networkAccess": {
-    "allowedDomains": ["https://cdnjs.cloudflare.com"]
+    "allowedDomains": [
+      "https://cdnjs.cloudflare.com",
+      "https://api.bitbucket.org"
+    ]
   }
 }
