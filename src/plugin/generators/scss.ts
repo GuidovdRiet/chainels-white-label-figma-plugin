@@ -1,5 +1,5 @@
 import { ThemeColors, ThemeColor } from "../../types";
-import { capitilizeFirstLetter } from "../utils/capitilizeFirstLetter";
+import { getColorName } from "../utils/getColorName";
 
 export async function generateScss(
   transformedData: ThemeColors,
@@ -8,12 +8,18 @@ export async function generateScss(
   return createTemplate(transformedData, whiteLabelName);
 }
 
-function generateColorMap(colorVariants: ThemeColor, name: string): string {
+function generateColorMap(
+  colorVariants: ThemeColor,
+  hexValue: string,
+  whiteLabelName: string
+): string {
   if (Object.keys(colorVariants).length === 0) return "";
 
+  const colorName = getColorName(hexValue, whiteLabelName);
   const entries = Object.entries(colorVariants) as [keyof ThemeColor, string][];
+
   return `
-$${name}: (
+$${colorName}: (
   ${entries.map(([tint, value]) => `'${tint}': ${value}`).join(",\n  ")}
 );`;
 }
@@ -22,35 +28,41 @@ async function createTemplate(
   transformedData: ThemeColors,
   whiteLabelName: string
 ): Promise<string> {
-  let colorTemplate = `// ${whiteLabelName} Theme Colors\n`;
+  const colorMaps = new Map<string, string>();
 
-  // Handle primary and accent colors
-  ["primary", "accent"].forEach((category) => {
-    const colorVariants =
-      transformedData[
-        category as keyof Pick<ThemeColors, "primary" | "accent">
-      ];
+  // Helper function to process a color
+  const processColor = (colorVariants: ThemeColor) => {
     if (Object.keys(colorVariants).length === 0) return;
+    const defaultHex = colorVariants.default;
+    if (!defaultHex) return;
 
-    const colorName = `${whiteLabelName}${capitilizeFirstLetter(category)}`;
-    colorTemplate += generateColorMap(colorVariants, colorName);
-  });
+    const colorName = getColorName(defaultHex, whiteLabelName);
+    if (!colorMaps.has(colorName)) {
+      colorMaps.set(
+        colorName,
+        generateColorMap(colorVariants, defaultHex, whiteLabelName)
+      );
+    }
+  };
 
-  // Handle semantic colors
-  Object.entries(transformedData.semantic).forEach(([key, colorVariants]) => {
-    if (Object.keys(colorVariants).length === 0) return;
+  // Process primary and accent
+  processColor(transformedData.primary);
+  processColor(transformedData.accent);
 
-    const colorName = `${whiteLabelName}${capitilizeFirstLetter(key)}`;
-    colorTemplate += generateColorMap(colorVariants, colorName);
-  });
+  // Process semantic colors (excluding neutral)
+  Object.entries(transformedData.semantic)
+    .filter(([key]) => key !== "neutral")
+    .forEach(([_, colorVariants]) => {
+      processColor(colorVariants);
+    });
 
-  // Handle status colors
-  Object.entries(transformedData.status).forEach(([key, colorVariants]) => {
-    if (Object.keys(colorVariants).length === 0) return;
+  // Process status colors (excluding closed)
+  Object.entries(transformedData.status)
+    .filter(([key]) => key !== "closed")
+    .forEach(([_, colorVariants]) => {
+      processColor(colorVariants);
+    });
 
-    const colorName = `${whiteLabelName}${capitilizeFirstLetter(key)}`;
-    colorTemplate += generateColorMap(colorVariants, colorName);
-  });
-
-  return colorTemplate;
+  return `// ${whiteLabelName} Theme Colors
+${Array.from(colorMaps.values()).join("\n")}`;
 }
