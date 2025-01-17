@@ -145,7 +145,7 @@ export function colorDataTransformer(color: string, hexValue: string) {
       variant: normalizedVariant,
       hexValue,
     });
-    
+
     transformedData.status[statusKey] = {
       ...transformedData.status[statusKey],
       [normalizedVariant]: hexValue,
@@ -155,7 +155,7 @@ export function colorDataTransformer(color: string, hexValue: string) {
     if (statusKey === "open") {
       console.log("Setting error color to match open color");
       transformedData.status.error = {
-        ...transformedData.status.open
+        ...transformedData.status.open,
       };
     }
   } else {

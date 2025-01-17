@@ -1,10 +1,10 @@
-import './utils/setImmediatePolyfill';
+import "./utils/setImmediatePolyfill";
 import { generateTheme } from "./themeGenerator";
 import { generateTypescript } from "./generators/typescript";
 import { generateScss } from "./generators/scss";
 import { generateScssEmail } from "./generators/scssEmail";
 
-figma.showUI(__html__, { width: 320, height: 480 });
+figma.showUI(__html__, { width: 350, height: 500 });
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "generate-theme") {

@@ -3,11 +3,12 @@
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
-      window.onload = function() {
+      window.onload = function () {
         if (!window.JSZip) {
           console.error("JSZip failed to load");
           document.getElementById("download-all-web").disabled = true;
-          document.getElementById("download-all-web").title = "Download all feature unavailable";
+          document.getElementById("download-all-web").title =
+            "Download all feature unavailable";
         } else {
           console.log("JSZip loaded successfully");
         }
@@ -24,7 +25,7 @@
         width: 100%;
         padding: 8px;
         margin-bottom: 12px;
-        border: 1px solid #ccc;
+        border: 1px solid #d1d5db;
         border-radius: 4px;
         box-sizing: border-box;
       }
@@ -39,11 +40,11 @@
         margin-bottom: 8px;
       }
       button:disabled {
-        background: #ccc;
+        background: #d1d5db;
         cursor: not-allowed;
       }
       button.secondary {
-        background: #fff;
+        background: #f9fafb;
         color: #ff0266;
         border: 1px solid #ff0266;
       }
@@ -52,11 +53,11 @@
         font-size: 12px;
       }
       .error {
-        color: #f00;
+        color: #db2b3a;
         margin-top: 8px;
       }
       .success {
-        color: #0a0;
+        color: #659f93;
         margin-top: 8px;
       }
       #download-section {
@@ -80,12 +81,20 @@
 
     <div id="download-section">
       <h3>Generated Files</h3>
-      <button id="download-all-web" class="secondary">Download All Web Files</button>
-      <div style="margin: 16px 0; border-top: 1px solid #eee;"></div>
+      <button id="download-all-web" class="secondary">
+        Download All Web Files
+      </button>
+      <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
       <button id="download-ts" class="secondary">Download TypeScript</button>
-      <button id="download-scss-colors" class="secondary">Download Colors SCSS</button>
-      <button id="download-scss-theme" class="secondary">Download Theme SCSS</button>
-      <button id="download-scss-email" class="secondary">Download Email SCSS</button>
+      <button id="download-scss-colors" class="secondary">
+        Download Colors SCSS
+      </button>
+      <button id="download-scss-theme" class="secondary">
+        Download Theme SCSS
+      </button>
+      <button id="download-scss-email" class="secondary">
+        Download Email SCSS
+      </button>
     </div>
 
     <div id="message"></div>
@@ -153,34 +162,39 @@
 
       document.getElementById("download-all-web").onclick = async () => {
         try {
-          if (!generatedFiles?.typescript || !generatedFiles?.scss || !generatedFiles?.scssEmail) {
+          if (
+            !generatedFiles?.typescript ||
+            !generatedFiles?.scss ||
+            !generatedFiles?.scssEmail
+          ) {
             showMessage("Error: Missing generated files", "error");
             return;
           }
 
-          const whiteLabelName = document.getElementById("whiteLabelName").value;
-          
+          const whiteLabelName =
+            document.getElementById("whiteLabelName").value;
+
           // Create a new ZIP using the browser's JSZip
           const zip = new JSZip();
-          
+
           // Add files to the zip with correct names
           zip.file(`${whiteLabelName}.brand.ts`, generatedFiles.typescript);
           zip.file(`${whiteLabelName}.colors.scss`, generatedFiles.scss);
           zip.file(`${whiteLabelName}.theme.scss`, generatedFiles.scssEmail);
           zip.file(`${whiteLabelName}-email.scss`, generatedFiles.scssEmail);
-          
+
           // Generate and download the zip
           const blob = await zip.generateAsync({ type: "blob" });
           const url = URL.createObjectURL(blob);
-          
-          const link = document.createElement('a');
+
+          const link = document.createElement("a");
           link.href = url;
           link.download = `${whiteLabelName}-web-files.zip`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
-          
+
           showMessage("Files downloaded successfully!", "success");
         } catch (error) {
           console.error("Error creating zip:", error);

@@ -56,7 +56,7 @@ export async function generateScssWhiteLabelName(
     transformedData.status.error,
     transformedData.status.error?.default || ""
   );
-  
+
   // If error color is not defined, use open color
   if (!error) {
     console.log("Error color not found in Figma, using open color as fallback");
@@ -81,4 +81,4 @@ $theme-colors: (
 
 @include setCssVariables();
 `;
-} 
+}

@@ -14,15 +14,20 @@ export async function generateScssEmail(
   // Get color names for each category
   const primary = processColor(transformedData.primary.default || "");
   const accent = processColor(transformedData.accent.default || "");
-  const positive = processColor(transformedData.semantic.positive.default || "");
+  const positive = processColor(
+    transformedData.semantic.positive.default || ""
+  );
   const warning = processColor(transformedData.semantic.warning.default || "");
-  const negative = processColor(transformedData.semantic.negative.default || "");
+  const negative = processColor(
+    transformedData.semantic.negative.default || ""
+  );
   const open = processColor(transformedData.status.open.default || "");
   const done = processColor(transformedData.status.done.default || "");
   const progress = processColor(transformedData.status.progress.default || "");
 
   // Use open color for error as per previous logic
-  const error = processColor(transformedData.status.error?.default || "") || open;
+  const error =
+    processColor(transformedData.status.error?.default || "") || open;
 
   return `@import '../../patterns/common/colors';
 @import '../../patterns/common/theme-variables';
@@ -47,4 +52,4 @@ $color-email-primary: themeColor('primary', 'default');
 
 @import '../../email/email';
 `;
-} 
+}
