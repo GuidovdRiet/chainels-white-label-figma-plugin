@@ -51,15 +51,19 @@ async function createTemplate(
   processColor(transformedData.primary, "primary");
   processColor(transformedData.accent, "accent");
 
-  // Process semantic colors
-  Object.entries(transformedData.semantic).forEach(([key, colorVariants]) => {
-    processColor(colorVariants, `semantic.${key}`);
-  });
+  // Process semantic colors (excluding neutral)
+  Object.entries(transformedData.semantic)
+    .filter(([key]) => key !== "neutral")
+    .forEach(([key, colorVariants]) => {
+      processColor(colorVariants, `semantic.${key}`);
+    });
 
-  // Process status colors
-  Object.entries(transformedData.status).forEach(([key, colorVariants]) => {
-    processColor(colorVariants, `status.${key}`);
-  });
+  // Process status colors (excluding closed)
+  Object.entries(transformedData.status)
+    .filter(([key]) => key !== "closed")
+    .forEach(([key, colorVariants]) => {
+      processColor(colorVariants, `status.${key}`);
+    });
 
   return `import { Theme } from '@emotion/react';
 
