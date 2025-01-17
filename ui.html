@@ -225,6 +225,44 @@
             }
           };
 
+          function downloadFile(filename, content) {
+            const element = document.createElement("a");
+            element.setAttribute(
+              "href",
+              "data:text/plain;charset=utf-8," + encodeURIComponent(content)
+            );
+            element.setAttribute("download", filename);
+            element.style.display = "none";
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+          }
+
+          function showMessage(message, type) {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = message;
+            messageEl.className = type;
+          }
+
+          onmessage = (event) => {
+            const msg = event.data.pluginMessage;
+            document.getElementById("generate").disabled = false;
+
+            if (msg.type === "error") {
+              showMessage(msg.message, "error");
+              return;
+            }
+
+            if (msg.type === "theme-generated") {
+              generatedFiles = msg.data;
+              document.getElementById("download-section").style.display = "block";
+              showMessage("Theme generated successfully!", "success");
+            }
+          };
+
+
+          // Favicon related code
+
           document.getElementById("favicon").onchange = function handleFaviconSelect(event) {
             const file = event.target.files?.[0];
             if (!file) return;
@@ -398,41 +436,6 @@
             const content = await zip.generateAsync({ type: "blob" });
             saveAs(content, `favicons-${whiteLabelName}.zip`);
           }
-
-          function downloadFile(filename, content) {
-            const element = document.createElement("a");
-            element.setAttribute(
-              "href",
-              "data:text/plain;charset=utf-8," + encodeURIComponent(content)
-            );
-            element.setAttribute("download", filename);
-            element.style.display = "none";
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-          }
-
-          function showMessage(message, type) {
-            const messageEl = document.getElementById("message");
-            messageEl.textContent = message;
-            messageEl.className = type;
-          }
-
-          onmessage = (event) => {
-            const msg = event.data.pluginMessage;
-            document.getElementById("generate").disabled = false;
-
-            if (msg.type === "error") {
-              showMessage(msg.message, "error");
-              return;
-            }
-
-            if (msg.type === "theme-generated") {
-              generatedFiles = msg.data;
-              document.getElementById("download-section").style.display = "block";
-              showMessage("Theme generated successfully!", "success");
-            }
-          };
     </script>
   </body>
 </html>
