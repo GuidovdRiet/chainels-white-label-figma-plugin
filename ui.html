@@ -69,7 +69,12 @@
     <div id="download-section">
       <h3>Generated Files</h3>
       <button id="download-ts" class="secondary">Download TypeScript</button>
-      <button id="download-scss" class="secondary">Download SCSS</button>
+      <button id="download-colors-scss" class="secondary">
+        Download Colors SCSS
+      </button>
+      <button id="download-theme-scss" class="secondary">
+        Download Theme SCSS
+      </button>
     </div>
 
     <div id="message"></div>
@@ -111,11 +116,19 @@
         );
       };
 
-      document.getElementById("download-scss").onclick = () => {
+      document.getElementById("download-colors-scss").onclick = () => {
         if (!generatedFiles?.scss) return;
         downloadFile(
           `${document.getElementById("whiteLabelName").value}.colors.scss`,
           generatedFiles.scss
+        );
+      };
+
+      document.getElementById("download-theme-scss").onclick = () => {
+        if (!generatedFiles?.scssWhiteLabelName) return;
+        downloadFile(
+          `${document.getElementById("whiteLabelName").value}.scss`,
+          generatedFiles.scssWhiteLabelName
         );
       };
 

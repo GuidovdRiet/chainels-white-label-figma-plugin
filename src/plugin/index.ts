@@ -1,6 +1,7 @@
 import { generateTheme } from "./themeGenerator";
 import { generateTypescript } from "./generators/typescript";
 import { generateScss } from "./generators/scss";
+import { generateScssWhiteLabelName } from "./generators/scssTheme";
 
 figma.showUI(__html__, { width: 320, height: 480 });
 
@@ -9,12 +10,16 @@ figma.ui.onmessage = async (msg) => {
     try {
       const { transformedData } = await generateTheme();
 
-      // Generate both TypeScript and SCSS files
+      // Generate all files
       const typescript = await generateTypescript(
         transformedData,
         msg.whiteLabelName
       );
       const scss = await generateScss(transformedData, msg.whiteLabelName);
+      const scssWhiteLabelName = await generateScssWhiteLabelName(
+        transformedData,
+        msg.whiteLabelName
+      );
 
       // Send the generated files back to the UI
       figma.ui.postMessage({
@@ -22,6 +27,7 @@ figma.ui.onmessage = async (msg) => {
         data: {
           typescript,
           scss,
+          scssWhiteLabelName,
           themeData: transformedData,
         },
       });
