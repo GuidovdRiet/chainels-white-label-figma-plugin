@@ -152,6 +152,11 @@
       let generatedFiles = null;
       let favicon = null;
 
+      const faviconSizes = [
+        { width: 192, height: 192, prefix: "favicon" },
+        { width: 512, height: 512, prefix: "favicon" },
+      ];
+
       document.getElementById("generate").onclick = () => {
         const whiteLabelName = document
           .getElementById("whiteLabelName")
@@ -228,11 +233,6 @@
           const whiteLabelName =
             document.getElementById("whiteLabelName").value;
 
-          const faviconSizes = [
-            { width: 192, height: 192, prefix: "favicon" },
-            { width: 512, height: 512, prefix: "favicon" },
-          ];
-
           // Create a new ZIP using the browser's JSZip
           const zip = new JSZip();
 
@@ -281,7 +281,7 @@
         }
       };
 
-      document.getElementById("submit-prs").onclick = () => {
+      document.getElementById("submit-prs").onclick = async () => {
         const submitButton = document.getElementById("submit-prs");
         const username = document.getElementById("bitbucket-username").value;
         const token = document.getElementById("bitbucket-token").value;
@@ -291,11 +291,7 @@
           return;
         }
 
-        if (
-          !generatedFiles?.typescript ||
-          !generatedFiles?.scss ||
-          !generatedFiles?.scssTheme
-        ) {
+        if (!generatedFiles?.typescript || !generatedFiles?.scss || !generatedFiles?.scssTheme) {
           showMessage("Error: Missing generated files", "error");
           return;
         }
@@ -306,21 +302,69 @@
 
         const whiteLabelName = document.getElementById("whiteLabelName").value;
 
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: "create-prs",
-              whiteLabelName,
-              credentials: { username, token },
-              files: {
-                typescript: generatedFiles.typescript,
-                scss: generatedFiles.scss,
-                scssTheme: generatedFiles.scssTheme,
+        try {
+          // Initialize with text files
+          const files = {
+            typescript: generatedFiles.typescript,
+            scss: generatedFiles.scss,
+            scssTheme: generatedFiles.scssTheme,
+          };
+
+          // Helper function to convert blob to data URI
+          async function blobToDataUri(blob) {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                resolve(reader.result); // Keep the full data URI
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          }
+
+          // Handle favicon images
+          for (const size of faviconSizes) {
+            const blob = await resizeImage({
+              favicon,
+              targetWidth: size.width,
+              targetHeight: size.height,
+            });
+
+            const dataUri = await blobToDataUri(blob);
+            files[`favicon-${size.width}x${size.height}.png`] = dataUri;
+          }
+
+          // Handle favicon.ico
+          const icoBlob = await resizeImage({
+            favicon,
+            targetWidth: 64,
+            targetHeight: 64,
+          });
+          const icoDataUri = await blobToDataUri(icoBlob);
+          files["favicon.ico"] = icoDataUri;
+
+          // Handle manifest.json
+          const manifestBlob = await generateWebAppManifest(whiteLabelName);
+          const manifestText = await manifestBlob.text();
+          files["manifest.json"] = manifestText;
+
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "create-prs",
+                whiteLabelName,
+                credentials: { username, token },
+                files,
               },
             },
-          },
-          "*"
-        );
+            "*"
+          );
+        } catch (error) {
+          console.error('Error preparing files:', error);
+          showMessage("Error preparing files for pull request", "error");
+          submitButton.disabled = false;
+          submitButton.textContent = "Create Pull Requests";
+        }
       };
 
       function downloadFile(filename, content) {
