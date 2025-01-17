@@ -1,5 +1,5 @@
 import { ThemeColors, ThemeColor } from "../../types";
-import { capitilizeFirstLetter } from "../utils/capitilizeFirstLetter";
+import { getColorName } from "../utils/getColorName";
 
 export async function generateTypescript(
   transformedData: ThemeColors,
@@ -8,12 +8,18 @@ export async function generateTypescript(
   return createTemplate(transformedData, whiteLabelName);
 }
 
-function generateColorExport(colorVariants: ThemeColor, name: string): string {
+function generateColorExport(
+  colorVariants: ThemeColor,
+  hexValue: string,
+  whiteLabelName: string
+): string {
   if (Object.keys(colorVariants).length === 0) return "";
 
+  const colorName = getColorName(hexValue, whiteLabelName);
   const entries = Object.entries(colorVariants) as [keyof ThemeColor, string][];
+
   return `
-export const ${name} = {
+export const ${colorName} = {
   ${entries.map(([tint, value]) => `${tint}: "${value}"`).join(",\n  ")}
 };`;
 }
@@ -22,45 +28,46 @@ async function createTemplate(
   transformedData: ThemeColors,
   whiteLabelName: string
 ): Promise<string> {
-  let colorTemplate = "";
-  let themeVariablesTemplate = "";
+  const colorExports = new Map<string, string>();
+  const assignments: string[] = [];
 
-  // Handle primary and accent colors
-  ["primary", "accent"].forEach((category) => {
-    const colorVariants =
-      transformedData[
-        category as keyof Pick<ThemeColors, "primary" | "accent">
-      ];
+  // Helper function to process a color
+  const processColor = (colorVariants: ThemeColor, category: string) => {
     if (Object.keys(colorVariants).length === 0) return;
+    const defaultHex = colorVariants.default;
+    if (!defaultHex) return;
 
-    const colorName = `${whiteLabelName}${capitilizeFirstLetter(category)}`;
-    colorTemplate += generateColorExport(colorVariants, colorName);
-    themeVariablesTemplate += `  themeVariables.colors.${category} = ${colorName};\n`;
-  });
+    const colorName = getColorName(defaultHex, whiteLabelName);
+    if (!colorExports.has(colorName)) {
+      colorExports.set(
+        colorName,
+        generateColorExport(colorVariants, defaultHex, whiteLabelName)
+      );
+    }
+    assignments.push(`  themeVariables.colors.${category} = ${colorName};`);
+  };
 
-  // Handle semantic colors
+  // Process primary and accent
+  processColor(transformedData.primary, "primary");
+  processColor(transformedData.accent, "accent");
+
+  // Process semantic colors
   Object.entries(transformedData.semantic).forEach(([key, colorVariants]) => {
-    if (Object.keys(colorVariants).length === 0) return;
-
-    const colorName = `${whiteLabelName}${capitilizeFirstLetter(key)}`;
-    colorTemplate += generateColorExport(colorVariants, colorName);
-    themeVariablesTemplate += `  themeVariables.colors.semantic.${key} = ${colorName};\n`;
+    processColor(colorVariants, `semantic.${key}`);
   });
 
-  // Handle status colors
+  // Process status colors
   Object.entries(transformedData.status).forEach(([key, colorVariants]) => {
-    if (Object.keys(colorVariants).length === 0) return;
-
-    const colorName = `${whiteLabelName}${capitilizeFirstLetter(key)}`;
-    colorTemplate += generateColorExport(colorVariants, colorName);
-    themeVariablesTemplate += `  themeVariables.colors.status.${key} = ${colorName};\n`;
+    processColor(colorVariants, `status.${key}`);
   });
 
   return `import { Theme } from '@emotion/react';
-${colorTemplate}
+
+${Array.from(colorExports.values()).join("\n")}
 
 export function ${whiteLabelName}Theme(themeVariables: Theme): Theme {
-${themeVariablesTemplate}
+${assignments.join("\n")}
+
   return themeVariables;
 }
 

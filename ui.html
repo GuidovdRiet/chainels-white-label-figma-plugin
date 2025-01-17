@@ -61,6 +61,7 @@
         type="text"
         id="whiteLabelName"
         placeholder="Enter white label name (e.g., ChainelsWhiteLabel)"
+        value="ChainelsWhiteLabel"
       />
       <button id="generate">Generate Theme Files</button>
     </div>
@@ -105,7 +106,7 @@
       document.getElementById("download-ts").onclick = () => {
         if (!generatedFiles?.typescript) return;
         downloadFile(
-          `${document.getElementById("whiteLabelName").value}.theme.ts`,
+          `${document.getElementById("whiteLabelName").value}.brand.ts`,
           generatedFiles.typescript
         );
       };
@@ -113,7 +114,7 @@
       document.getElementById("download-scss").onclick = () => {
         if (!generatedFiles?.scss) return;
         downloadFile(
-          `${document.getElementById("whiteLabelName").value}.theme.scss`,
+          `${document.getElementById("whiteLabelName").value}.colors.scss`,
           generatedFiles.scss
         );
       };
