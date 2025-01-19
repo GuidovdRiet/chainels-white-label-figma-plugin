@@ -312,7 +312,7 @@ export async function createPullRequests(
 
 This PR adds the following generated theme files:
 - \`${whiteLabelName}.brand.ts\`: TypeScript theme configuration
-- \`${whiteLabelName}.colors.scss\`: SCSS color variables and maps
+- \`${whiteLabelName}.colors.scss\`: SCSS color variables
 - \`${whiteLabelName}.theme.scss\`: Main theme file with color assignments
 - \`${whiteLabelName}-email.scss\`: Email-specific theme styles
 - \`favicons/${whiteLabelName}\`: Favicons for the white label
