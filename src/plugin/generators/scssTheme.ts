@@ -31,7 +31,6 @@ export async function generateScssTheme(
 
   return `@import '../../patterns/common/colors';
 @import '../../patterns/common/theme-variables';
-@import 'colors';
 
 $theme-colors: (
   'primary': $${primary},

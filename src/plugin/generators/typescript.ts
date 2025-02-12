@@ -55,14 +55,14 @@ async function createTemplate(
   Object.entries(transformedData.semantic)
     .filter(([key]) => key !== "neutral")
     .forEach(([key, colorVariants]) => {
-      processColor(colorVariants, `semantic.${key}`);
+      processColor(colorVariants, `${key}`);
     });
 
   // Process status colors (excluding closed)
   Object.entries(transformedData.status)
     .filter(([key]) => key !== "closed")
     .forEach(([key, colorVariants]) => {
-      processColor(colorVariants, `status.${key}`);
+      processColor(colorVariants, `${key}`);
     });
 
   return `import { Theme } from '@emotion/react';
