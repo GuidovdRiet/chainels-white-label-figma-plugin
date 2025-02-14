@@ -1,40 +1,116 @@
-Below are the steps to get your plugin running. You can also find instructions at:
+# Chainels White Label Figma Plugin
 
-  https://www.figma.com/plugin-docs/plugin-quickstart-guide/
+A Figma plugin that generates white label theme files for Chainels applications. This plugin extracts design tokens from your Figma file and generates all necessary theme files for web and mobile applications.
 
-This plugin template uses Typescript and NPM, two standard tools in creating JavaScript applications.
+## Generated Files
 
-First, download Node.js which comes with NPM. This will allow you to install TypeScript and other
-libraries. You can find the download link here:
+The plugin generates the following files:
 
-  https://nodejs.org/en/download/
+### Theme Files
 
-Next, install TypeScript using the command:
+- `[whiteLabelName].brand.ts`: TypeScript theme configuration with color assignments
+- `[whiteLabelName].colors.scss`: SCSS color variables
+- `[whiteLabelName].scss`: Main theme file with color assignments
+- `[whiteLabelName]-email.scss`: Email-specific theme styles
 
-  npm install -g typescript
+### App Configuration
 
-Finally, in the directory of your plugin, get the latest type definitions for the plugin API by running:
+- `[whiteLabelName].config.json`: Application configuration file containing:
+  - App configuration (brand ID, subdomain, app name, etc.)
+  - Store configuration (multilingual store details)
+  - Color definitions with semantic naming (e.g., `primary_50`, `primary_100`, etc.)
+  - Theme configuration linking colors to their semantic roles
 
-  npm install --save-dev @figma/plugin-typings
+### Favicons (Beta)
 
-If you are familiar with JavaScript, TypeScript will look very familiar. In fact, valid JavaScript code
-is already valid Typescript code.
+- `favicon.ico`: Main favicon file
+- `favicon-192x192.png`: PWA icon for modern devices
+- `favicon-512x512.png`: Large PWA icon for high-resolution devices
+- `manifest.json`: Web app manifest for PWA support
 
-TypeScript adds type annotations to variables. This allows code editors such as Visual Studio Code
-to provide information about the Figma API while you are writing code, as well as help catch bugs
-you previously didn't notice.
+## Prerequisites
 
-For more information, visit https://www.typescriptlang.org/
+Before you begin, ensure you have installed:
 
-Using TypeScript requires a compiler to convert TypeScript (code.ts) into JavaScript (code.js)
-for the browser to run.
+- [Figma Desktop App](https://www.figma.com/downloads/)
+- [Node.js](https://nodejs.org/) (version 14 or higher)
+- [npm](https://www.npmjs.com/) (comes with Node.js)
 
-We recommend writing TypeScript code using Visual Studio code:
+## Development Setup
 
-1. Download Visual Studio Code if you haven't already: https://code.visualstudio.com/.
-2. Open this directory in Visual Studio Code.
-3. Compile TypeScript to JavaScript: Run the "Terminal > Run Build Task..." menu item,
-    then select "npm: watch". You will have to do this again every time
-    you reopen Visual Studio Code.
+1. Clone this repository:
 
-That's it! Visual Studio Code will regenerate the JavaScript file every time you save.
+   ```bash
+   git clone https://github.com/chainels/chainels-white-label-figma-plugin.git
+   cd chainels-white-label-figma-plugin
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the TypeScript compiler in watch mode:
+   ```bash
+   npm run dev
+   ```
+
+## Installing the Plugin in Figma
+
+1. Open the Figma desktop app
+2. Go to Menu > Plugins > Development > Import plugin from manifest
+3. Navigate to your cloned repository and select the `manifest.json` file
+
+For detailed instructions on plugin development and setup, see the [Figma Plugin Development Guide](https://www.figma.com/plugin-docs/plugin-quickstart-guide/).
+
+## Using the Plugin
+
+1. Open your Figma file containing the white label design tokens
+2. Run the plugin from the Plugins menu
+3. Enter your white label name (e.g., "ChainelsWhiteLabel")
+4. (Optional) Upload a favicon image
+5. Click "Generate Theme Files"
+6. Use the download buttons to get the generated files
+
+## File Structure
+
+```
+src/
+├── plugin/
+│   ├── generators/
+│   │   ├── appConfig.ts     # App configuration generator
+│   │   ├── scss.ts          # SCSS file generator
+│   │   ├── scssTheme.ts     # Theme SCSS generator
+│   │   └── typescript.ts    # TypeScript file generator
+│   ├── utils/
+│   │   ├── colorDataTransformer.ts  # Color processing
+│   │   ├── createColorTint.ts       # Color variant generation
+│   │   ├── getColorName.ts          # Color naming utility
+│   │   └── createPullRequests.ts    # PR creation utility
+│   └── index.ts             # Plugin entry point
+└── types/
+    └── index.ts             # TypeScript type definitions
+```
+
+## Building for Production
+
+To build the plugin for production:
+
+```bash
+npm run build
+```
+
+This will:
+
+1. Compile TypeScript files
+2. Bundle the plugin
+3. Generate production-ready files in the `dist` directory
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
