@@ -3,6 +3,7 @@ import { generateTheme } from "./themeGenerator";
 import { generateTypescript } from "./generators/typescript";
 import { generateScss } from "./generators/scss";
 import { generateScssTheme } from "./generators/scssTheme";
+import { generateAppConfig } from "./generators/appConfig";
 import { createPullRequests } from "./utils/createPullRequests";
 
 figma.showUI(__html__, { width: 350, height: 500 });
@@ -11,6 +12,22 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "generate-theme") {
     try {
       const { transformedData } = await generateTheme();
+
+      // Get all variables from Figma
+      const figmaVariables: { [key: string]: string } = {};
+      const variables = figma.variables.getLocalVariables();
+      variables.forEach((variable) => {
+        const modes =
+          figma.variables.getVariableCollectionById(
+            variable.variableCollectionId
+          )?.modes || [];
+        if (modes.length > 0) {
+          const value = variable.valuesByMode[modes[0].modeId];
+          if (typeof value === "string") {
+            figmaVariables[variable.name] = value;
+          }
+        }
+      });
 
       // Generate all files
       const typescript = await generateTypescript(
@@ -22,6 +39,10 @@ figma.ui.onmessage = async (msg) => {
         transformedData,
         msg.whiteLabelName
       );
+      const appConfig = await generateAppConfig(
+        transformedData,
+        figmaVariables
+      );
 
       // Send the generated files back to the UI
       figma.ui.postMessage({
@@ -31,6 +52,7 @@ figma.ui.onmessage = async (msg) => {
           scss,
           scssTheme: scssOutput.theme,
           scssEmail: scssOutput.email,
+          appConfig,
           themeData: transformedData,
         },
       });

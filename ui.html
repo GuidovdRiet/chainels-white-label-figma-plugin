@@ -112,7 +112,10 @@
         Download Email SCSS
       </button>
       <button id="download-favicons" class="secondary">
-        Download Favicons
+        Download Favicons (Beta)
+      </button>
+      <button id="download-app-config" class="secondary">
+        Download App Config
       </button>
       <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
       <div id="pr-form">
@@ -167,11 +170,7 @@
           return;
         }
 
-        if (!favicon) {
-          showMessage("Please enter a favicon image", "error");
-          return;
-        }
-
+        // Remove favicon check
         // Reset UI state
         document.getElementById("download-section").style.display = "none";
         document.getElementById("generate").disabled = true;
@@ -225,13 +224,25 @@
         );
       };
 
+      document.getElementById("download-app-config").onclick = () => {
+        if (!generatedFiles?.appConfig) return;
+        const whiteLabelName = document.getElementById("whiteLabelName").value;
+        const lowerCaseWhiteLabelName =
+          whiteLabelName.charAt(0).toLowerCase() + whiteLabelName.slice(1);
+        downloadFile(
+          `${lowerCaseWhiteLabelName}.config.json`,
+          generatedFiles.appConfig
+        );
+      };
+
       document.getElementById("download-all-web").onclick = async () => {
         try {
           if (
             !generatedFiles?.typescript ||
             !generatedFiles?.scss ||
             !generatedFiles?.scssTheme ||
-            !generatedFiles?.scssEmail
+            !generatedFiles?.scssEmail ||
+            !generatedFiles?.appConfig
           ) {
             showMessage("Error: Missing generated files", "error");
             return;
@@ -259,38 +270,49 @@
             `${lowerCaseWhiteLabelName}-email.scss`,
             generatedFiles.scssEmail
           );
+          zip.file(
+            `${lowerCaseWhiteLabelName}.config.json`,
+            generatedFiles.appConfig
+          );
 
-          for (const size of faviconSizes) {
-            const blob = await resizeImage({
+          // Only add favicon files if a favicon was uploaded
+          if (favicon) {
+            for (const size of faviconSizes) {
+              const blob = await resizeImage({
+                favicon,
+                targetWidth: size.width,
+                targetHeight: size.height,
+              });
+
+              zip.file(
+                `${size.prefix}-${size.width}x${size.height}.png`,
+                blob,
+                {
+                  binary: true,
+                }
+              );
+            }
+
+            const icoBlob = await resizeImage({
               favicon,
-              targetWidth: size.width,
-              targetHeight: size.height,
+              targetWidth: 64,
+              targetHeight: 64,
             });
 
-            zip.file(`${size.prefix}-${size.width}x${size.height}.png`, blob, {
+            zip.file(`favicon.ico`, icoBlob, {
+              binary: true,
+            });
+
+            const manifestBlob = await generateWebAppManifest(whiteLabelName);
+
+            zip.file("manifest.json", manifestBlob, {
               binary: true,
             });
           }
 
-          const icoBlob = await resizeImage({
-            favicon,
-            targetWidth: 64,
-            targetHeight: 64,
-          });
-
-          zip.file(`favicon.ico`, icoBlob, {
-            binary: true,
-          });
-
-          const manifestBlob = await generateWebAppManifest(whiteLabelName);
-
-          zip.file("manifest.json", manifestBlob, {
-            binary: true,
-          });
-
           // Generate and download the zip
           const blob = await zip.generateAsync({ type: "blob" });
-          saveAs(blob, `${whiteLabelName}.zip`);
+          saveAs(blob, `${lowerCaseWhiteLabelName}.zip`);
 
           showMessage("Files downloaded successfully!", "success");
         } catch (error) {
@@ -312,7 +334,9 @@
         if (
           !generatedFiles?.typescript ||
           !generatedFiles?.scss ||
-          !generatedFiles?.scssTheme
+          !generatedFiles?.scssTheme ||
+          !generatedFiles?.scssEmail ||
+          !generatedFiles?.appConfig
         ) {
           showMessage("Error: Missing generated files", "error");
           return;
@@ -330,45 +354,53 @@
             typescript: generatedFiles.typescript,
             scss: generatedFiles.scss,
             scssTheme: generatedFiles.scssTheme,
+            scssEmail: generatedFiles.scssEmail,
+            "favicon.ico": "",
+            "favicon-192x192.png": "",
+            "favicon-512x512.png": "",
+            "manifest.json": "",
           };
 
-          // Helper function to convert blob to data URI
-          async function blobToDataUri(blob) {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                resolve(reader.result); // Keep the full data URI
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-          }
+          // Only add favicon files if a favicon was uploaded
+          if (favicon) {
+            // Helper function to convert blob to data URI
+            async function blobToDataUri(blob) {
+              return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  resolve(reader.result); // Keep the full data URI
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+            }
 
-          // Handle favicon images
-          for (const size of faviconSizes) {
-            const blob = await resizeImage({
+            // Handle favicon images
+            for (const size of faviconSizes) {
+              const blob = await resizeImage({
+                favicon,
+                targetWidth: size.width,
+                targetHeight: size.height,
+              });
+
+              const dataUri = await blobToDataUri(blob);
+              files[`favicon-${size.width}x${size.height}.png`] = dataUri;
+            }
+
+            // Handle favicon.ico
+            const icoBlob = await resizeImage({
               favicon,
-              targetWidth: size.width,
-              targetHeight: size.height,
+              targetWidth: 64,
+              targetHeight: 64,
             });
+            const icoDataUri = await blobToDataUri(icoBlob);
+            files["favicon.ico"] = icoDataUri;
 
-            const dataUri = await blobToDataUri(blob);
-            files[`favicon-${size.width}x${size.height}.png`] = dataUri;
+            // Handle manifest.json
+            const manifestBlob = await generateWebAppManifest(whiteLabelName);
+            const manifestText = await manifestBlob.text();
+            files["manifest.json"] = manifestText;
           }
-
-          // Handle favicon.ico
-          const icoBlob = await resizeImage({
-            favicon,
-            targetWidth: 64,
-            targetHeight: 64,
-          });
-          const icoDataUri = await blobToDataUri(icoBlob);
-          files["favicon.ico"] = icoDataUri;
-
-          // Handle manifest.json
-          const manifestBlob = await generateWebAppManifest(whiteLabelName);
-          const manifestText = await manifestBlob.text();
-          files["manifest.json"] = manifestText;
 
           parent.postMessage(
             {
@@ -411,6 +443,8 @@
       onmessage = (event) => {
         const msg = event.data.pluginMessage;
         const submitButton = document.getElementById("submit-prs");
+        const downloadFaviconsButton =
+          document.getElementById("download-favicons");
 
         if (msg.type === "pr-progress") {
           showMessage(msg.message, "info");
@@ -440,13 +474,22 @@
         if (msg.type === "theme-generated") {
           generatedFiles = msg.data;
           document.getElementById("download-section").style.display = "block";
+          document.getElementById("generate").disabled = false;
+
+          // Update favicon button state
+          downloadFaviconsButton.disabled = !favicon;
+          if (!favicon) {
+            downloadFaviconsButton.title = "Please upload a favicon first";
+          } else {
+            downloadFaviconsButton.title = "";
+          }
         }
       };
 
       // Favicon related code
       document.getElementById("download-favicons").onclick = () => {
         if (!favicon) {
-          showMessage("Please upload a favicon", "error");
+          showMessage("Please upload a favicon first", "error");
           return;
         }
         downloadResizedImagesAsZip({
