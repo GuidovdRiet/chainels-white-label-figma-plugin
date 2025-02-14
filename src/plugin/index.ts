@@ -18,7 +18,7 @@ figma.ui.onmessage = async (msg) => {
         msg.whiteLabelName
       );
       const scss = await generateScss(transformedData, msg.whiteLabelName);
-      const scssTheme = await generateScssTheme(
+      const scssOutput = await generateScssTheme(
         transformedData,
         msg.whiteLabelName
       );
@@ -29,7 +29,8 @@ figma.ui.onmessage = async (msg) => {
         data: {
           typescript,
           scss,
-          scssTheme,
+          scssTheme: scssOutput.theme,
+          scssEmail: scssOutput.email,
           themeData: transformedData,
         },
       });

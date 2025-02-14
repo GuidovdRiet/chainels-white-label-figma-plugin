@@ -205,17 +205,23 @@
 
       document.getElementById("download-scss-theme").onclick = () => {
         if (!generatedFiles?.scssTheme) return;
+        const whiteLabelName = document.getElementById("whiteLabelName").value;
+        const lowerCaseWhiteLabelName =
+          whiteLabelName.charAt(0).toLowerCase() + whiteLabelName.slice(1);
         downloadFile(
-          `${document.getElementById("whiteLabelName").value}.theme.scss`,
+          `${lowerCaseWhiteLabelName}.scss`,
           generatedFiles.scssTheme
         );
       };
 
       document.getElementById("download-scss-email").onclick = () => {
-        if (!generatedFiles?.scssTheme) return;
+        if (!generatedFiles?.scssEmail) return;
+        const whiteLabelName = document.getElementById("whiteLabelName").value;
+        const lowerCaseWhiteLabelName =
+          whiteLabelName.charAt(0).toLowerCase() + whiteLabelName.slice(1);
         downloadFile(
-          `${document.getElementById("whiteLabelName").value}-email.scss`,
-          generatedFiles.scssTheme
+          `${lowerCaseWhiteLabelName}-email.scss`,
+          generatedFiles.scssEmail
         );
       };
 
@@ -224,7 +230,8 @@
           if (
             !generatedFiles?.typescript ||
             !generatedFiles?.scss ||
-            !generatedFiles?.scssTheme
+            !generatedFiles?.scssTheme ||
+            !generatedFiles?.scssEmail
           ) {
             showMessage("Error: Missing generated files", "error");
             return;
@@ -232,15 +239,26 @@
 
           const whiteLabelName =
             document.getElementById("whiteLabelName").value;
+          const lowerCaseWhiteLabelName =
+            whiteLabelName.charAt(0).toLowerCase() + whiteLabelName.slice(1);
 
           // Create a new ZIP using the browser's JSZip
           const zip = new JSZip();
 
           // Add files to the zip with correct names
-          zip.file(`${whiteLabelName}.brand.ts`, generatedFiles.typescript);
-          zip.file(`${whiteLabelName}.colors.scss`, generatedFiles.scss);
-          zip.file(`${whiteLabelName}.theme.scss`, generatedFiles.scssTheme);
-          zip.file(`${whiteLabelName}-email.scss`, generatedFiles.scssTheme);
+          zip.file(
+            `${lowerCaseWhiteLabelName}.brand.ts`,
+            generatedFiles.typescript
+          );
+          zip.file(
+            `${lowerCaseWhiteLabelName}.colors.scss`,
+            generatedFiles.scss
+          );
+          zip.file(`${lowerCaseWhiteLabelName}.scss`, generatedFiles.scssTheme);
+          zip.file(
+            `${lowerCaseWhiteLabelName}-email.scss`,
+            generatedFiles.scssEmail
+          );
 
           for (const size of faviconSizes) {
             const blob = await resizeImage({
@@ -291,7 +309,11 @@
           return;
         }
 
-        if (!generatedFiles?.typescript || !generatedFiles?.scss || !generatedFiles?.scssTheme) {
+        if (
+          !generatedFiles?.typescript ||
+          !generatedFiles?.scss ||
+          !generatedFiles?.scssTheme
+        ) {
           showMessage("Error: Missing generated files", "error");
           return;
         }
@@ -360,7 +382,7 @@
             "*"
           );
         } catch (error) {
-          console.error('Error preparing files:', error);
+          console.error("Error preparing files:", error);
           showMessage("Error preparing files for pull request", "error");
           submitButton.disabled = false;
           submitButton.textContent = "Create Pull Requests";

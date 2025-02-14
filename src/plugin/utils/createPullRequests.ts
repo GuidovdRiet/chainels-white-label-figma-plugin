@@ -154,46 +154,52 @@ async function createBitbucketPR(
       const fileUrl = `${baseUrl}/repositories/${workspace}/${config.repoSlug}/src`;
       const isImage = /\.(png|ico|jpg|jpeg|gif)$/i.test(file.path);
 
-      let boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+      let boundary =
+        "----WebKitFormBoundary" + Math.random().toString(36).substring(2);
 
-      let body = '';
+      let body = "";
       if (isImage) {
         // For image files, create proper multipart/form-data with base64 content
-        const base64Data = file.content.split(',')[1];
-        const contentType = file.path.endsWith('.ico') ? 'image/x-icon' : 'image/png';
+        const base64Data = file.content.split(",")[1];
+        const contentType = file.path.endsWith(".ico")
+          ? "image/x-icon"
+          : "image/png";
 
         body = [
           `--${boundary}`,
-          `Content-Disposition: form-data; name="${file.path}"; filename="${file.path.split('/').pop()}"`,
+          `Content-Disposition: form-data; name="${
+            file.path
+          }"; filename="${file.path.split("/").pop()}"`,
           `Content-Type: ${contentType}`,
-          'Content-Transfer-Encoding: base64',
-          '',
+          "Content-Transfer-Encoding: base64",
+          "",
           base64Data,
           `--${boundary}`,
           'Content-Disposition: form-data; name="branch"',
-          '',
+          "",
           config.branch,
           `--${boundary}`,
           'Content-Disposition: form-data; name="message"',
-          '',
+          "",
           `Add ${file.path}`,
-          `--${boundary}--`
-        ].join('\r\n');
-
+          `--${boundary}--`,
+        ].join("\r\n");
       } else {
         // For text files, use x-www-form-urlencoded
         body = [
-          `${encodeURIComponent(file.path)}=${encodeURIComponent(file.content)}`,
+          `${encodeURIComponent(file.path)}=${encodeURIComponent(
+            file.content
+          )}`,
           `branch=${encodeURIComponent(config.branch)}`,
-          `message=${encodeURIComponent(`Add ${file.path}`)}`
-        ].join('&');
+          `message=${encodeURIComponent(`Add ${file.path}`)}`,
+        ].join("&");
       }
 
       const headers = {
         Authorization: `Basic ${auth}`,
-        'Content-Type': isImage
+        "Content-Type": isImage
           ? `multipart/form-data; boundary=${boundary}`
-          : 'application/x-www-form-urlencoded'
+          : "application/x-www-form-urlencoded",
       };
 
       const fileResponse = await fetch(fileUrl, {
@@ -261,6 +267,7 @@ export async function createPullRequests(
     typescript: string;
     scss: string;
     scssTheme: string;
+    scssEmail: string;
     "favicon.ico": string;
     "favicon-192x192.png": string;
     "favicon-512x512.png": string;
@@ -268,58 +275,61 @@ export async function createPullRequests(
   },
   credentials: { username: string; token: string }
 ) {
-  console.log('files', files);
+  // Convert whiteLabelName to start with lowercase
+  const lowerCaseWhiteLabelName =
+    whiteLabelName.charAt(0).toLowerCase() + whiteLabelName.slice(1);
+
   const repoConfig: PullRequestConfig = {
     repoSlug: "hackathon-white-label",
-    branch: `feature/white-label-${whiteLabelName.toLowerCase()}`,
+    branch: `feature/white-label-${lowerCaseWhiteLabelName}`,
     files: [
       {
         content: files.typescript,
-        path: `themes/${whiteLabelName}.brand.ts`,
+        path: `themes/${lowerCaseWhiteLabelName}.brand.ts`,
       },
       {
         content: files.scss,
-        path: `themes/${whiteLabelName}.colors.scss`,
+        path: `themes/${lowerCaseWhiteLabelName}.colors.scss`,
       },
       {
         content: files.scssTheme,
-        path: `themes/${whiteLabelName}.scss`,
+        path: `themes/${lowerCaseWhiteLabelName}.scss`,
       },
       {
-        content: files.scssTheme,
-        path: `themes/${whiteLabelName}-email.scss`,
+        content: files.scssEmail,
+        path: `themes/${lowerCaseWhiteLabelName}-email.scss`,
       },
       {
         content: files["favicon.ico"],
-        path: `favicons/${whiteLabelName}/favicon.ico`,
+        path: `favicons/${lowerCaseWhiteLabelName}/favicon.ico`,
       },
       {
         content: files["favicon-192x192.png"],
-        path: `favicons/${whiteLabelName}/favicon-192x192.png`,
+        path: `favicons/${lowerCaseWhiteLabelName}/favicon-192x192.png`,
       },
       {
         content: files["favicon-512x512.png"],
-        path: `favicons/${whiteLabelName}/favicon-512x512.png`,
+        path: `favicons/${lowerCaseWhiteLabelName}/favicon-512x512.png`,
       },
       {
         content: files["manifest.json"],
-        path: `favicons/${whiteLabelName}/manifest.json`,
+        path: `favicons/${lowerCaseWhiteLabelName}/manifest.json`,
       },
     ],
-    commitMessage: `feat(white-label): add ${whiteLabelName} theme files`,
+    commitMessage: `feat(white-label): add ${lowerCaseWhiteLabelName} theme files`,
     prTitle: `Add ${whiteLabelName} white label theme`,
     prDescription: `# White Label Theme: ${whiteLabelName}
 
 This PR adds the following generated theme files:
-- \`${whiteLabelName}.brand.ts\`: TypeScript theme configuration
-- \`${whiteLabelName}.colors.scss\`: SCSS color variables
-- \`${whiteLabelName}.theme.scss\`: Main theme file with color assignments
-- \`${whiteLabelName}-email.scss\`: Email-specific theme styles
-- \`favicons/${whiteLabelName}\`: Favicons for the white label
-- \`favicons/${whiteLabelName}/manifest.json\`: Web app manifest for the white label
+- \`${lowerCaseWhiteLabelName}.brand.ts\`: TypeScript theme configuration
+- \`${lowerCaseWhiteLabelName}.colors.scss\`: SCSS color variables
+- \`${lowerCaseWhiteLabelName}.scss\`: Main theme file with color assignments
+- \`${lowerCaseWhiteLabelName}-email.scss\`: Email-specific theme styles
+- \`favicons/${lowerCaseWhiteLabelName}\`: Favicons for the white label
+- \`favicons/${lowerCaseWhiteLabelName}/manifest.json\`: Web app manifest for the white label
 
 ## Changes
-- Created new branch \`feature/white-label-${whiteLabelName.toLowerCase()}\`
+- Created new branch \`feature/white-label-${lowerCaseWhiteLabelName}\`
 - Generated theme files from Figma design tokens
 - Added theme files to \`themes/\`
 

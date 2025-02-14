@@ -1,10 +1,19 @@
 import { ThemeColors } from "../../types";
 import { getColorName } from "../utils/getColorName";
 
+interface ScssThemeOutput {
+  theme: string;
+  email: string;
+}
+
 export async function generateScssTheme(
   transformedData: ThemeColors,
   whiteLabelName: string
-): Promise<string> {
+): Promise<ScssThemeOutput> {
+  // Convert whiteLabelName to start with lowercase
+  const lowerCaseWhiteLabelName =
+    whiteLabelName.charAt(0).toLowerCase() + whiteLabelName.slice(1);
+
   // Helper function to process a color and get its variable name
   const processColor = (defaultHex: string) => {
     if (!defaultHex) return null;
@@ -24,16 +33,11 @@ export async function generateScssTheme(
   const open = processColor(transformedData.status.open.default || "");
   const done = processColor(transformedData.status.done.default || "");
   const progress = processColor(transformedData.status.progress.default || "");
-
-  // Use open color for error as per previous logic
   const error =
     processColor(transformedData.status.error?.default || "") || open;
 
-  return `@import '../../patterns/common/colors';
-@import '../../patterns/common/theme-variables';
-@import 'colors';
-
-$theme-colors: (
+  // Common theme colors configuration
+  const themeColorsConfig = `$theme-colors: (
   'primary': $${primary},
   'accent': $${accent},
   'positive': $${positive},
@@ -45,10 +49,32 @@ $theme-colors: (
   'progress': $${progress},
   'closed': $chainelsNeutralGray,
   'error': $${error}
-);
+);`;
 
-$color-email-accent: themeColor('accent', 'default');
+  // Common imports
+  const commonImports = `@import '../../patterns/common/colors';
+@import '../../patterns/common/theme-variables';
+@import './${lowerCaseWhiteLabelName}.colors';`;
+
+  // Generate theme SCSS
+  const themeScss = `${commonImports}
+
+${themeColorsConfig}
+
+@include setCssVariables();`;
+
+  // Generate email SCSS
+  const emailScss = `${commonImports}
+
+${themeColorsConfig}
+
+$color-email-accent: themeColor('primary', 'default');
 $color-email-primary: themeColor('primary', 'default');
 
 @import '../../email/email';`;
+
+  return {
+    theme: themeScss,
+    email: emailScss,
+  };
 }
