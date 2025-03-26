@@ -58,7 +58,13 @@ Before you begin, ensure you have installed:
 
 ## Installing the Plugin in Figma
 
-1. In your repository run: `npm run build:bundle`
+1. Clone this repository:
+
+   ```bash
+   git clone https://github.com/GuidovdRiet/chainels-white-label-figma-plugin.git
+   cd chainels-white-label-figma-plugin
+   npm run build:bundle
+   ```
 2. Open the Figma desktop app
 3. Go to Menu > Plugins > Development > Import plugin from manifest
 4. Navigate to your cloned repository and select the `manifest.json` file
