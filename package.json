@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run build:ts && npm run build:bundle",
     "build:ts": "tsc -p tsconfig.json",
-    "build:bundle": "esbuild dist/plugin/index.js --bundle --outfile=dist/plugin/bundle.js --platform=browser --format=iife --global-name=figmaPlugin && mv dist/plugin/bundle.js dist/plugin/index.js",
+    "build:bundle": "esbuild src/plugin/index.ts --bundle --outfile=dist/plugin/index.js --platform=browser --format=iife --global-name=figmaPlugin",
     "watch": "node watch.js",
     "dev": "npm run watch"
   },
