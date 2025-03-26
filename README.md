@@ -58,9 +58,10 @@ Before you begin, ensure you have installed:
 
 ## Installing the Plugin in Figma
 
-1. Open the Figma desktop app
-2. Go to Menu > Plugins > Development > Import plugin from manifest
-3. Navigate to your cloned repository and select the `manifest.json` file
+1. In your repository run: `npm run build:bundle`
+2. Open the Figma desktop app
+3. Go to Menu > Plugins > Development > Import plugin from manifest
+4. Navigate to your cloned repository and select the `manifest.json` file
 
 For detailed instructions on plugin development and setup, see the [Figma Plugin Development Guide](https://www.figma.com/plugin-docs/plugin-quickstart-guide/).
 
