@@ -41,7 +41,7 @@ Before you begin, ensure you have installed:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/chainels/chainels-white-label-figma-plugin.git
+   git clone https://github.com/chainels/chainels-white-label-figma-plugin.git](https://github.com/GuidovdRiet/chainels-white-label-figma-plugin.git
    cd chainels-white-label-figma-plugin
    ```
 
