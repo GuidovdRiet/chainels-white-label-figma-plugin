@@ -38,7 +38,7 @@ Before you begin, ensure you have installed:
 
 ## Development Setup
 
-1. Clone this repository:
+1. Clone this repository, install dependencies and build:
 
    ```bash
    git clone https://github.com/GuidovdRiet/chainels-white-label-figma-plugin.git
@@ -47,15 +47,10 @@ Before you begin, ensure you have installed:
    npm run build
    ```
 
-2. Install dependencies:
+3. Making changes
 
    ```bash
-   npm install
-   ```
-
-3. Start the TypeScript compiler in watch mode:
-   ```bash
-   npm run dev
+   npm run build
    ```
 
 ## Installing the Plugin in Figma
