@@ -55,7 +55,7 @@ Before you begin, ensure you have installed:
 
 ## Installing the Plugin in Figma
 
-1. Clone this repository:
+1. Clone this repository, install dependencies and build:
 
    ```bash
    git clone https://github.com/GuidovdRiet/chainels-white-label-figma-plugin.git
