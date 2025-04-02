@@ -43,6 +43,8 @@ Before you begin, ensure you have installed:
    ```bash
    git clone https://github.com/GuidovdRiet/chainels-white-label-figma-plugin.git
    cd chainels-white-label-figma-plugin
+   npm install
+   npm run build
    ```
 
 2. Install dependencies:
