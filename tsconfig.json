@@ -1,20 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "es2015",
-    "lib": ["es2017", "dom"],
-    "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "./node_modules/@figma"],
+    "target": "es2020",
+    "lib": ["es2020", "dom"],
     "strict": true,
-    "outDir": "dist",
+    "typeRoots": ["./node_modules/@types", "./node_modules/@figma"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "commonjs",
     "esModuleInterop": true,
-    "allowJs": true,
-    "jsx": "react",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "skipLibCheck": true,
-    "types": ["@figma/plugin-typings"]
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "node_modules/@figma/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
 }
