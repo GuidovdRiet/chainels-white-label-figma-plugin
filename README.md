@@ -64,8 +64,10 @@ Before you begin, ensure you have installed:
    npm run build
    ```
 2. Open the Figma desktop app
-3. Go to Menu > Plugins > Development > Import plugin from manifest
-4. Navigate to your cloned repository and select the `manifest.json` file
+3. Make a draft of the Figma file
+4. Make sure dev mode is turned off
+5. Go to Menu > Plugins > Development > Import plugin from manifest
+6. Navigate to your cloned repository and select the `manifest.json` file
 
 For detailed instructions on plugin development and setup, see the [Figma Plugin Development Guide](https://www.figma.com/plugin-docs/plugin-quickstart-guide/).
 
