@@ -26,6 +26,7 @@ interface AppConfig {
     slogan: string;
     splash_screen_color: string;
     provider_name: string;
+    google_drive: string;
   };
   store_config: {
     store_name: StoreTranslation[];
@@ -79,6 +80,7 @@ export async function generateAppConfig(
       slogan: figmaVariables["Slogan"] || "",
       splash_screen_color: transformedData.primary.default || "#FFFFFF",
       provider_name: figmaVariables["Provider"] || "",
+      google_drive: figmaVariables["Google Drive"] || "",
     },
     store_config: {
       store_name: [
