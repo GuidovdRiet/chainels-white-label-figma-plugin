@@ -14,19 +14,51 @@ figma.ui.onmessage = async (msg) => {
       const { transformedData } = await generateTheme();
 
       // Get all variables from Figma
-      const figmaVariables: { [key: string]: string } = {};
-      const variables = figma.variables.getLocalVariables();
-      variables.forEach((variable) => {
-        const modes =
-          figma.variables.getVariableCollectionById(
-            variable.variableCollectionId
-          )?.modes || [];
-        if (modes.length > 0) {
-          const value = variable.valuesByMode[modes[0].modeId];
-          if (typeof value === "string") {
-            figmaVariables[variable.name] = value;
+      const figmaVariables: { [key: string]: { [key: string]: string } } = {};
+
+      // Get all collections and their variables
+      const collections = figma.variables.getLocalVariableCollections();
+
+      collections.forEach((collection) => {
+        const { modes, variableIds } = collection;
+        console.log("Collection:", {
+          name: collection.name,
+          modes: modes.map((m) => m.name),
+          variableCount: variableIds.length,
+        });
+
+        // Process each variable in the collection
+        variableIds.forEach((variableId) => {
+          const variable = figma.variables.getVariableById(variableId);
+          if (variable) {
+            const { name: varName, valuesByMode } = variable;
+
+            // Initialize the variable object if it doesn't exist
+            if (!figmaVariables[varName]) {
+              figmaVariables[varName] = {};
+            }
+
+            // Map each mode's value to its corresponding language
+            modes.forEach((mode) => {
+              const value = valuesByMode[mode.modeId];
+              if (typeof value === "string") {
+                // Use the mode name as the language key
+                figmaVariables[varName][mode.name] = value;
+              }
+            });
+
+            console.log("Variable processed:", {
+              name: varName,
+              modes: Object.keys(valuesByMode).map((modeId) => {
+                const mode = modes.find((m) => m.modeId === modeId);
+                return {
+                  name: mode?.name,
+                  value: valuesByMode[modeId],
+                };
+              }),
+            });
           }
-        }
+        });
       });
 
       // Generate all files

@@ -56,72 +56,48 @@ function getColorNameForApp(colorType: string, variant: string): string {
 
 export async function generateAppConfig(
   transformedData: ThemeColors,
-  figmaVariables: { [key: string]: string }
+  figmaVariables: { [key: string]: { [key: string]: string } }
 ): Promise<string> {
-  // Helper function to get store config value with fallback
-  function getStoreConfigValue(
-    enKey: string,
-    nlKey: string
-  ): { en: string; nl: string } {
-    const enValue = figmaVariables[enKey] || "";
-    const nlValue = figmaVariables[nlKey] || "";
-    return {
-      en: enValue,
-      nl: nlValue || enValue, // Use English value as fallback if Dutch is empty
-    };
+  // Helper function to get the first available value from any column
+  function getFirstAvailableValue(key: string): string {
+    if (!figmaVariables[key]) return "";
+    const values = Object.values(figmaVariables[key]);
+    return values.find((value) => value) || "";
+  }
+
+  // Helper function to get store config values for all languages
+  function getStoreConfigValues(baseKey: string): StoreTranslation[] {
+    const translations: StoreTranslation[] = [];
+
+    // Get the values for each language column
+    if (figmaVariables[baseKey]) {
+      Object.entries(figmaVariables[baseKey]).forEach(([columnName, value]) => {
+        translations.push({
+          language: columnName, // Use the exact column name as the language
+          value: value,
+        });
+      });
+    }
+
+    return translations;
   }
 
   const config: AppConfig = {
     app_config: {
-      brand_id: figmaVariables["Brand id"] || "",
-      subdomain: figmaVariables["Subdomain"] || "",
-      app_name: figmaVariables["App name"] || "",
-      brand_name: figmaVariables["Brand name"] || "",
-      slogan: figmaVariables["Slogan"] || "",
-      splash_screen_color: transformedData.primary.default || "#FFFFFF",
-      provider_name: figmaVariables["Provider"] || "",
-      google_drive: figmaVariables["Google Drive"] || "",
+      brand_id: getFirstAvailableValue("Brand id"),
+      subdomain: getFirstAvailableValue("Subdomain"),
+      app_name: getFirstAvailableValue("App name"),
+      brand_name: getFirstAvailableValue("Brand name"),
+      slogan: getFirstAvailableValue("Slogan"),
+      splash_screen_color:
+        getFirstAvailableValue("splashscreen background") || "#FFFFFF",
+      provider_name: getFirstAvailableValue("Provider"),
+      google_drive: getFirstAvailableValue("Google Drive"),
     },
     store_config: {
-      store_name: [
-        {
-          language: "en",
-          value: figmaVariables["App Store name"] || "",
-        },
-        {
-          language: "nl",
-          value:
-            figmaVariables["App Store name NL"] ||
-            figmaVariables["App Store name"] ||
-            "", // Fallback to EN
-        },
-      ],
-      description: [
-        {
-          language: "en",
-          value: figmaVariables["Store Description"] || "",
-        },
-        {
-          language: "nl",
-          value:
-            figmaVariables["Store Description NL"] ||
-            figmaVariables["Store Description"] ||
-            "", // Fallback to EN
-        },
-      ],
-      keywords: [
-        {
-          language: "en",
-          value: figmaVariables["Store keywords"] || "",
-        },
-        {
-          language: "nl",
-          value:
-            figmaVariables["Store keywords NL"] ||
-            figmaVariables["Store keywords"] ||
-            "", // Fallback to EN
-        },
-      ],
+      store_name: getStoreConfigValues("App Store name"),
+      description: getStoreConfigValues("Store Description"),
+      keywords: getStoreConfigValues("Store keywords"),
     },
     colors: [],
     theme: {
