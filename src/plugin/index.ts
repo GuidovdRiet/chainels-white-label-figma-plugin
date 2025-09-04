@@ -21,11 +21,6 @@ figma.ui.onmessage = async (msg) => {
 
       collections.forEach((collection) => {
         const { modes, variableIds } = collection;
-        console.log("Collection:", {
-          name: collection.name,
-          modes: modes.map((m) => m.name),
-          variableCount: variableIds.length,
-        });
 
         // Process each variable in the collection
         variableIds.forEach((variableId) => {
@@ -38,24 +33,37 @@ figma.ui.onmessage = async (msg) => {
               figmaVariables[varName] = {};
             }
 
+            // Helper function to convert RGB to hex - sometimes figma returns rgb values while hex is saved
+            const rgbToHex = (r: number, g: number, b: number): string => {
+              const toHex = (n: number) => {
+                const hex = Math.round(n * 255).toString(16);
+                return hex.length === 1 ? "0" + hex : hex;
+              };
+              return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+            };
+
             // Map each mode's value to its corresponding language
             modes.forEach((mode) => {
               const value = valuesByMode[mode.modeId];
+
               if (typeof value === "string") {
                 // Use the mode name as the language key
                 figmaVariables[varName][mode.name] = value;
+              } else if (
+                typeof value === "object" &&
+                value !== null &&
+                "r" in value &&
+                "g" in value &&
+                "b" in value
+              ) {
+                // Convert RGB object to hex string
+                const hexValue = rgbToHex(
+                  value.r as number,
+                  value.g as number,
+                  value.b as number
+                );
+                figmaVariables[varName][mode.name] = hexValue;
               }
-            });
-
-            console.log("Variable processed:", {
-              name: varName,
-              modes: Object.keys(valuesByMode).map((modeId) => {
-                const mode = modes.find((m) => m.modeId === modeId);
-                return {
-                  name: mode?.name,
-                  value: valuesByMode[modeId],
-                };
-              }),
             });
           }
         });
