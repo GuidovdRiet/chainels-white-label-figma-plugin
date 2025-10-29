@@ -4,7 +4,8 @@
   "api": "1.0.0",
   "main": "dist/plugin/index.js",
   "ui": "ui.html",
-  "editorType": ["figma"],
+  "editorType": ["figma", "dev"],
+  "capabilities": ["inspect"],
   "networkAccess": {
     "allowedDomains": [
       "https://cdnjs.cloudflare.com",
