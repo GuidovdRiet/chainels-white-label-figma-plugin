@@ -100,17 +100,7 @@ export async function generateAppConfig(
       keywords: getStoreConfigValues("Store keywords"),
     },
     colors: [],
-    theme: {
-      primary: {},
-      accent: {},
-      positive: {},
-      warning: {},
-      negative: {},
-      open: {},
-      done: {},
-      progress: {},
-      error: {},
-    },
+    theme: {},
   };
 
   function processColorVariant(colorObj: any, colorType: string) {
@@ -142,16 +132,15 @@ export async function generateAppConfig(
   processColorVariant(transformedData.primary, "primary");
   processColorVariant(transformedData.accent, "accent");
 
-  // Process semantic colors
-  processColorVariant(transformedData.semantic.positive, "positive");
-  processColorVariant(transformedData.semantic.warning, "warning");
-  processColorVariant(transformedData.semantic.negative, "negative");
+  // Process semantic colors dynamically
+  Object.entries(transformedData.semantic).forEach(([key, colorVariants]) => {
+    processColorVariant(colorVariants, key);
+  });
 
-  // Process status colors
-  processColorVariant(transformedData.status.open, "open");
-  processColorVariant(transformedData.status.done, "done");
-  processColorVariant(transformedData.status.progress, "progress");
-  processColorVariant(transformedData.status.error, "error");
+  // Process status colors dynamically
+  Object.entries(transformedData.status).forEach(([key, colorVariants]) => {
+    processColorVariant(colorVariants, key);
+  });
 
   return JSON.stringify(config, null, 2);
 }
