@@ -8,7 +8,8 @@ If you're a designer and just want to use this plugin, follow these simple steps
 
 ### Option 1: Using a Pre-built Package (Recommended)
 
-1. **Get the plugin package**: Ask your developer for the `chainels-white-label-figma-plugin.zip` file, or download it from the [latest release](https://github.com/GuidovdRiet/chainels-white-label-figma-plugin/releases) if available.
+1. **Get the plugin package**: Download it from the [latest release](https://github.com/GuidovdRiet/chainels-white-label-figma-plugin/releases) check for the latest version and download: `
+chainels-white-label-figma-plugin.zip `
 
 2. **Unzip the file**: Double-click the zip file to extract it. You'll see a folder with these files:
    - `manifest.json`
