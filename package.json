@@ -1,11 +1,12 @@
 {
   "name": "white-label-theme-generator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Figma plugin to generate white label themes",
   "main": "dist/plugin/index.js",
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
+    "package": "node package-plugin.js",
     "lint": "eslint --ext .ts,.tsx --ignore-pattern node_modules .",
     "lint:fix": "eslint --ext .ts,.tsx --ignore-pattern node_modules --fix ."
   },

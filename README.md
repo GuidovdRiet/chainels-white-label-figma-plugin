@@ -2,6 +2,47 @@
 
 A Figma plugin that generates white label theme files for Chainels applications. This plugin extracts design tokens from your Figma file and generates all necessary theme files for web and mobile applications.
 
+## 🎨 Install as a Designer (No Technical Knowledge Required)
+
+If you're a designer and just want to use this plugin, follow these simple steps:
+
+### Option 1: Using a Pre-built Package (Recommended)
+
+1. **Get the plugin package**: Ask your developer for the `chainels-white-label-figma-plugin.zip` file, or download it from the [latest release](https://github.com/GuidovdRiet/chainels-white-label-figma-plugin/releases) if available.
+
+2. **Unzip the file**: Double-click the zip file to extract it. You'll see a folder with these files:
+   - `manifest.json`
+   - `ui.html`
+   - `dist/` folder
+
+3. **Install in Figma**:
+   - Open the **Figma Desktop App** (this won't work in the browser version)
+   - Open or create a Figma file
+   - Go to **Menu** → **Plugins** → **Development** → **Import plugin from manifest...**
+   - Navigate to the unzipped folder and select the `manifest.json` file
+   - The plugin is now installed! 🎉
+
+4. **Use the plugin**:
+   - Go to **Plugins** → **Development** → **White Label Theme Generator**
+   - Follow the on-screen instructions to generate your theme files
+
+### Option 2: If You Have the Source Files
+
+If you received the source files instead of a zip:
+
+1. **Make sure you have Node.js installed** (ask your developer if you're not sure)
+2. **Open Terminal** (on Mac) or **Command Prompt** (on Windows)
+3. **Navigate to the plugin folder** and run:
+   ```bash
+   npm install
+   npm run build
+   ```
+4. Then follow steps 3-4 from Option 1 above
+
+**That's it!** No need to install Git, Homebrew, or any other developer tools. Just unzip and import! 🚀
+
+---
+
 ## Generated Files
 
 The plugin generates the following files:
@@ -28,15 +69,18 @@ The plugin generates the following files:
 - `favicon-512x512.png`: Large PWA icon for high-resolution devices
 - `manifest.json`: Web app manifest for PWA support
 
-## Prerequisites
+## 👨‍💻 For Developers
+
+### Prerequisites
 
 Before you begin, ensure you have installed:
 
 - [Figma Desktop App](https://www.figma.com/downloads/)
 - [Node.js](https://nodejs.org/) (version 14 or higher)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
+- [Git](https://git-scm.com/) (for cloning the repository)
 
-## Development Setup
+### Development Setup
 
 1. Clone this repository, install dependencies and build:
 
@@ -53,7 +97,7 @@ Before you begin, ensure you have installed:
    npm run build
    ```
 
-## Installing the Plugin in Figma
+### Installing the Plugin in Figma (Development)
 
 1. Clone this repository, install dependencies and build:
 
@@ -63,13 +107,32 @@ Before you begin, ensure you have installed:
    npm install
    npm run build
    ```
+
 2. Open the Figma desktop app
 3. Make a draft of the Figma file
 4. Make sure dev mode is turned off
-5. Go to Menu > Plugins > Development > Import plugin from manifest
+5. Go to **Menu** → **Plugins** → **Development** → **Import plugin from manifest**
 6. Navigate to your cloned repository and select the `manifest.json` file
 
 For detailed instructions on plugin development and setup, see the [Figma Plugin Development Guide](https://www.figma.com/plugin-docs/plugin-quickstart-guide/).
+
+### Creating a Distribution Package
+
+To create a zip file that designers can use without any technical setup:
+
+```bash
+npm run package
+```
+
+This will:
+1. Build the plugin
+2. Package everything into `chainels-white-label-figma-plugin.zip`
+3. The zip file contains everything needed - just share it with designers!
+
+The zip file includes:
+- `manifest.json`
+- `ui.html`
+- `dist/` folder with compiled plugin code
 
 ## Using the Plugin
 
