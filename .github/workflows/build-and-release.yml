@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -34,7 +36,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: chainels-white-label-figma-plugin.zip
-          generate_release_notes: true
+          generate_release_notes: false
           draft: false
           prerelease: false
         env:
