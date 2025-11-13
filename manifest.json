@@ -10,6 +10,9 @@
     "allowedDomains": [
       "https://cdnjs.cloudflare.com",
       "https://api.bitbucket.org"
+    ],
+    "devAllowedDomains": [
+      "http://localhost:3001"
     ]
   }
 }

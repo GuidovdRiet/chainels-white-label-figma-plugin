@@ -268,10 +268,7 @@ export async function createPullRequests(
     scss: string;
     scssTheme: string;
     scssEmail: string;
-    "favicon.ico": string;
-    "favicon-192x192.png": string;
-    "favicon-512x512.png": string;
-    "manifest.json": string;
+    [key: string]: string; // Allow any favicon file names
   },
   credentials: { username: string; token: string }
 ) {
@@ -312,9 +309,15 @@ This PR adds the following generated theme files:
 ${
   files["favicon.ico"]
     ? `
-## Favicons (Beta)
-- \`favicons/${lowerCaseWhiteLabelName}\`: Favicons for the white label
-- \`favicons/${lowerCaseWhiteLabelName}/manifest.json\`: Web app manifest for the white label`
+## Favicons
+- \`favicons/${lowerCaseWhiteLabelName}\`: Complete favicon package including:
+  - Standard favicons (16x16, 32x32, favicon.ico)
+  - Apple Touch Icons (all sizes)
+  - Android Chrome Icons (192x192, 512x512)
+  - Microsoft Tiles (all sizes)
+  - \`site.webmanifest\`: Web app manifest
+  - \`browserconfig.xml\`: Windows tile configuration
+  - \`favicon-markup.html\`: HTML markup for easy integration`
     : ""
 }
 
@@ -329,26 +332,39 @@ ${files["favicon.ico"] ? "- Added favicons and web app manifest" : ""}
 - User: ${credentials.username}`,
   };
 
-  // Only add favicon files if they exist
-  if (files["favicon.ico"]) {
-    repoConfig.files.push(
-      {
-        content: files["favicon.ico"],
-        path: `favicons/${lowerCaseWhiteLabelName}/favicon.ico`,
-      },
-      {
-        content: files["favicon-192x192.png"],
-        path: `favicons/${lowerCaseWhiteLabelName}/favicon-192x192.png`,
-      },
-      {
-        content: files["favicon-512x512.png"],
-        path: `favicons/${lowerCaseWhiteLabelName}/favicon-512x512.png`,
-      },
-      {
-        content: files["manifest.json"],
-        path: `favicons/${lowerCaseWhiteLabelName}/manifest.json`,
-      }
-    );
+  // Add all favicon files if they exist
+  const faviconFileNames = [
+    "favicon.ico",
+    "favicon-16x16.png",
+    "favicon-32x32.png",
+    "apple-touch-icon.png",
+    "apple-touch-icon-60x60.png",
+    "apple-touch-icon-72x72.png",
+    "apple-touch-icon-76x76.png",
+    "apple-touch-icon-114x114.png",
+    "apple-touch-icon-120x120.png",
+    "apple-touch-icon-144x144.png",
+    "apple-touch-icon-152x152.png",
+    "apple-touch-icon-180x180.png",
+    "android-chrome-192x192.png",
+    "android-chrome-512x512.png",
+    "mstile-70x70.png",
+    "mstile-144x144.png",
+    "mstile-150x150.png",
+    "mstile-310x310.png",
+    "mstile-310x150.png",
+    "site.webmanifest",
+    "browserconfig.xml",
+    "favicon-markup.html",
+  ];
+
+  for (const filename of faviconFileNames) {
+    if (files[filename]) {
+      repoConfig.files.push({
+        content: files[filename],
+        path: `favicons/${lowerCaseWhiteLabelName}/${filename}`,
+      });
+    }
   }
 
   return await createBitbucketPR(repoConfig, credentials);
