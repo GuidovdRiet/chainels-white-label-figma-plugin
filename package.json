@@ -10,7 +10,7 @@
     "lint": "eslint --ext .ts,.tsx --ignore-pattern node_modules .",
     "lint:fix": "eslint --ext .ts,.tsx --ignore-pattern node_modules --fix .",
     "server": "node server/favicon-server.js",
-    "dev": "node server/favicon-server.js"
+    "dev": "node build.js --watch --server"
   },
   "dependencies": {
     "@realfavicongenerator/generate-favicon": "^0.5.0",
