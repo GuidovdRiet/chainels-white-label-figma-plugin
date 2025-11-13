@@ -98,7 +98,7 @@
     <div id="download-section">
       <h3>Generated Files</h3>
       <button id="download-all-web" class="secondary">
-        Download All Web Files
+        Download All Files
       </button>
       <div style="margin: 16px 0; border-top: 1px solid #eee"></div>
       <button id="download-ts" class="secondary">Download TypeScript</button>
@@ -445,6 +445,41 @@
         const submitButton = document.getElementById("submit-prs");
         const downloadFaviconsButton =
           document.getElementById("download-favicons");
+
+        if (msg.type === "variable-log") {
+          console.log("📋 Variable Log:", msg.message);
+          if (msg.variable) {
+            console.log("   Variable Details:", msg.variable);
+          }
+          return;
+        }
+
+        if (msg.type === "variable-log-complete") {
+          console.log("✅ Variable Logging Complete");
+          console.log("📊 Summary:", msg.summary);
+          console.log("📦 All Collections:", msg.collections);
+          
+          // Log detailed variable information
+          msg.collections.forEach((collection, idx) => {
+            console.log(`\n📁 Collection ${idx + 1}: "${collection.name}"`);
+            console.log(`   Modes: ${collection.modes.join(", ")}`);
+            console.log(`   Variables: ${collection.variableCount}`);
+            collection.variables.forEach((variable, varIdx) => {
+              console.log(`\n   🎨 Variable ${varIdx + 1}: "${variable.name}"`);
+              console.log(`      Type: ${variable.type}`);
+              console.log(`      Values by Mode:`);
+              Object.keys(variable.values).forEach((modeName) => {
+                const value = variable.values[modeName];
+                if (value.hex) {
+                  console.log(`         ${modeName}: ${value.hex} (RGB: ${value.rgb.r}, ${value.rgb.g}, ${value.rgb.b})`);
+                } else {
+                  console.log(`         ${modeName}: ${JSON.stringify(value)}`);
+                }
+              });
+            });
+          });
+          return;
+        }
 
         if (msg.type === "pr-progress") {
           showMessage(msg.message, "info");
