@@ -9,3 +9,9 @@ code.js
 
 # Package files
 *.zip
+
+# Environment variables (contains secrets!)
+.env
+.env.local
+server/.env
+server/temp/

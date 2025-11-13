@@ -5,11 +5,13 @@ This server provides an API endpoint to generate favicons from uploaded images u
 ## Setup
 
 1. Install dependencies (already done):
+
 ```bash
 npm install
 ```
 
 2. Start the server:
+
 ```bash
 npm run server
 ```
@@ -23,6 +25,7 @@ The server will run on `http://localhost:3001`
 Upload an image file to generate favicons.
 
 **Request:**
+
 - Method: `POST`
 - Content-Type: `multipart/form-data`
 - Body:
@@ -30,6 +33,7 @@ Upload an image file to generate favicons.
   - `siteName`: Site name for manifest (optional, defaults to "Site")
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -61,4 +65,3 @@ The Figma plugin UI will automatically call this server when you upload a favico
 ## Health Check
 
 GET `/health` - Returns `{ "status": "ok" }`
-

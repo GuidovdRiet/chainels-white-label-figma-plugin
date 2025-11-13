@@ -92,6 +92,22 @@
         value="ChainelsWhiteLabel"
       />
       <input type="file" id="favicon" accept="image/*" />
+      <input
+        type="text"
+        id="favicon-api-key"
+        placeholder="Favicon API Key (optional for localhost)"
+        style="font-family: monospace; font-size: 11px"
+      />
+      <div
+        style="
+          font-size: 11px;
+          color: #666;
+          margin-top: -8px;
+          margin-bottom: 8px;
+        "
+      >
+        Only needed for production servers. Leave empty for localhost.
+      </div>
       <button id="generate">Generate Theme Files</button>
     </div>
 
@@ -556,11 +572,20 @@
               document.getElementById("whiteLabelName").value || "Site"
             );
 
+            // Get API key from input field (if provided)
+            const apiKey =
+              document.getElementById("favicon-api-key")?.value?.trim() || null;
+            const headers = {};
+            if (apiKey) {
+              headers["X-API-Key"] = apiKey;
+            }
+
             const response = await fetch(
               `${FAVICON_SERVER_URL}/api/generate-favicons`,
               {
                 method: "POST",
                 body: formData,
+                headers: headers,
               }
             );
 
@@ -807,17 +832,17 @@
        */
       function generateBrowserConfig() {
         return `<?xml version="1.0" encoding="utf-8"?>
-<browserconfig>
-    <msapplication>
-        <tile>
-            <square70x70logo src="/mstile-70x70.png"/>
-            <square150x150logo src="/mstile-150x150.png"/>
-            <square310x310logo src="/mstile-310x310.png"/>
-            <wide310x150logo src="/mstile-310x150.png"/>
-            <TileColor>#ffffff</TileColor>
-        </tile>
-    </msapplication>
-</browserconfig>`;
+      <browserconfig>
+          <msapplication>
+              <tile>
+                  <square70x70logo src="/mstile-70x70.png"/>
+                  <square150x150logo src="/mstile-150x150.png"/>
+                  <square310x310logo src="/mstile-310x310.png"/>
+                  <wide310x150logo src="/mstile-310x150.png"/>
+                  <TileColor>#ffffff</TileColor>
+              </tile>
+          </msapplication>
+      </browserconfig>`;
       }
 
       /**
@@ -826,29 +851,29 @@
       function generateFaviconHtml() {
         const whiteLabelName = document.getElementById("whiteLabelName").value;
         return `<!-- Favicon HTML Markup -->
-<!-- Standard favicons -->
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="shortcut icon" href="/favicon.ico">
+      <!-- Standard favicons -->
+      <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+      <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+      <link rel="shortcut icon" href="/favicon.ico">
 
-<!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon.png">
+      <!-- Apple Touch Icons -->
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+      <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+      <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+      <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+      <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+      <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon.png">
 
-<!-- Android Chrome -->
-<link rel="manifest" href="/site.webmanifest">
+      <!-- Android Chrome -->
+      <link rel="manifest" href="/site.webmanifest">
 
-<!-- Microsoft Tiles -->
-<meta name="msapplication-TileColor" content="#ffffff">
-<meta name="msapplication-TileImage" content="/mstile-144x144.png">
-<meta name="msapplication-config" content="/browserconfig.xml">`;
+      <!-- Microsoft Tiles -->
+      <meta name="msapplication-TileColor" content="#ffffff">
+      <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+      <meta name="msapplication-config" content="/browserconfig.xml">`;
       }
 
       /**
