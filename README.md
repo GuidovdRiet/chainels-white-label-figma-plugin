@@ -31,7 +31,7 @@ chainels-white-label-figma-plugin.zip `
 
 If you received the source files instead of a zip:
 
-1. **Make sure you have Node.js installed** (ask your developer if you're not sure)
+1. **Make sure you have Node.js installed** (ask developer if you're not sure)
 2. **Open Terminal** (on Mac) or **Command Prompt** (on Windows)
 3. **Navigate to the plugin folder** and run:
    ```bash
